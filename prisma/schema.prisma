@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model oauth_states {
+  state      String    @id @default(uuid())
+  created_at DateTime  @default(now())
+  expired_at DateTime
+  used       Boolean   @default(false)
+}
+
+model integrations {
+  domain        String    @id
+  access_token  String
+  refresh_token String
+  amojo_id      String
+  scope_id      String
+  active        Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  chats   chats[]
+}
+
+model messages {
+  id         String    @id
+  type       String
+  text       String?
+  media      String?
+  role       String
+  sent_at    DateTime  @default(now())
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  chat chats @relation(fields: [chat_id], references: [id])
+  chat_id String
+}
+
+model contacts {
+  id                  Int    @id
+  name                String
+  first_name          String
+  last_name           String
+  responsible_user_id Int?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+
+  chats chats[]
+}
+
+model leads {
+  id                     Int       @id
+  name                   String
+  responsible_user_id    Int
+  responsible_user_name  String?
+  pipeline_id            Int
+  status_id              Int
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  deleted_at             DateTime?
+
+  chat          chats?
+  calls         calls[]
+  custom_fields lead_custom_fields[]
+}
+
+model lead_custom_fields {
+  lead_id      Int
+  amo_field_id Int
+  name         String
+  value        Json
+
+  lead leads @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+
+  @@id([lead_id, amo_field_id])
+}
+
+model chats {
+  id              String    @id
+  talk_id         Int
+  origin          String
+  conversation_id String @unique
+  last_polled_at  DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  integration integrations @relation(fields: [integration_domain], references: [domain])
+  integration_domain String
+
+  lead leads @relation(fields: [lead_id], references: [id])
+  lead_id Int @unique
+
+  contact contacts @relation(fields: [contact_id], references: [id])
+  contact_id Int
+
+  messages messages[]
+}
+
+model chat_history_offsets {
+  scope_id        String
+  conversation_id String
+  offset          Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@id([scope_id, conversation_id])
+}
+
+model calls {
+  id                     Int       @id
+  direction              String
+  uuid                   String    @unique
+  duration               Int
+  source                 String
+  link                   String
+  phone                  String
+  call_responsible       String
+  call_responsible_name  String?
+  timestamp              Int
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  deleted_at             DateTime?
+
+  lead    leads @relation(fields: [lead_id], references: [id])
+  lead_id Int
+}
+
+/// Один ряд: расписание и состояние периодической отправки данных на внешний URL.
+model outbound_sync_config {
+  id           String    @id @default("default")
+  enabled      Boolean   @default(false)
+  /// Период между успешными отправками
+  interval_ms  Int       @default(259200000) // 3 дня
+  target_url   String    @default("")
+  /// Уходит во внешний запрос как Authorization: Bearer … (если задано)
+  api_key      String?
+  last_sent_at DateTime?
+  last_error   String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+}

@@ -1,0 +1,83 @@
+import Fastify from "fastify"
+import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod"
+import qs from "qs"
+import { config } from "./config.js"
+import { logger } from "./logger.js"
+import prismaPlugin from "./plugins/prisma.js"
+import amoPlugin from "./plugins/amo.js"
+import apiKeyPlugin from "./plugins/api_key.js"
+import authRoutes from "./modules/auth/routes.js"
+import integrationRoutes from "./modules/integration/routes.js"
+import webhookRoutes from "./modules/webhook/routes.js"
+import { startChatHistoryPolling } from "./modules/webhook/history_polling.js"
+import { WebhookRepo } from "./modules/webhook/repo.js"
+import callsRoutes from "./modules/calls/routes.js"
+import outboundSyncRoutes from "./modules/outbound_sync/routes.js"
+import { startOutboundSyncWorker } from "./modules/outbound_sync/worker.js"
+
+export async function init() {
+    const app = Fastify()
+    app.setValidatorCompiler(validatorCompiler)
+    app.setSerializerCompiler(serializerCompiler)
+
+    app.addContentTypeParser(
+        "application/x-www-form-urlencoded",
+        { parseAs: "string" },
+        (_req, body, done) => {
+            done(null, qs.parse(body as string))
+        },
+    )
+
+    return app
+}
+
+export async function run() {
+    const app = await init()
+
+    await app.register(prismaPlugin)
+    await app.register(amoPlugin)
+    await app.register(apiKeyPlugin)
+
+    app.addHook("onRequest", async (req, reply) => {
+        ; (req as any).startTime = Date.now()
+        logger.info(`Incoming request`, { method: req.method, url: req.url, ip: req.ip })
+    })
+
+    app.addHook("onResponse", async (req, reply) => {
+        const duration = Date.now() - (req as any).startTime
+        logger.info(`Request completed`, { method: req.method, url: req.url, status: reply.statusCode, duration })
+    })
+
+    app.get("/health", async () => {
+        return { status: "ok" }
+    })
+
+    await app.register(async (v1) => {
+        await v1.register(authRoutes, { prefix: "/auth" })
+        await v1.register(integrationRoutes, { prefix: "/integration" })
+        await v1.register(webhookRoutes, { prefix: "/webhook" })
+        await v1.register(callsRoutes, { prefix: "/calls" })
+        await v1.register(outboundSyncRoutes, { prefix: "/outbound-sync" })
+    }, { prefix: "/api/v1" })
+
+    // Pull-based сбор будущих сообщений: периодически догружаем историю по offset.
+    // Воркеры не конфликтуют: 1 воркер на чат + глобальный лимит параллельности + RPS лимитер в AmoClient.
+    startChatHistoryPolling({ repo: new WebhookRepo(app.prisma), amoClient: app.amoClient })
+    startOutboundSyncWorker({ prisma: app.prisma })
+
+    await app.listen({
+        port: config.PORT,
+        host: config.HOST
+    })
+
+    logger.info(`🚀 server started`, { host: config.HOST, port: config.PORT })
+
+    const shutdown = async () => {
+        await app.close()
+        logger.info(`🛑 server stopped by signal`)
+        process.exit(0)
+    }
+
+    process.on("SIGINT", shutdown)
+    process.on("SIGTERM", shutdown)
+}
