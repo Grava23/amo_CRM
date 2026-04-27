@@ -13,6 +13,8 @@ const configSchema = z.object({
     AMO_CLIENT_ID: z.string().default(""),
     AMO_CLIENT_SECRET: z.string().default(""),
     AMO_REDIRECT_URI: z.string().default(""),
+    AMO_CHANNEL_ID: z.string().default(""),
+    AMO_CHANNEL_SECRET: z.string().default(""),
     /** Если задан — запросы (кроме /health, /auth/*, /webhook/*) требуют Authorization: Bearer … или x-api-key */
     SERVER_API_KEY: z.string().optional(),
 })

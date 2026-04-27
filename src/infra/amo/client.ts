@@ -160,7 +160,7 @@ export class AmoClient {
 
         const signatureString = `${request.method}\n${bodyHash}\napplication/json\n${date}\n${path}`
 
-        const signature = createHmac("sha1", config.AMO_CLIENT_SECRET)
+        const signature = createHmac("sha1", config.AMO_CHANNEL_SECRET)
             .update(signatureString)
             .digest("base64")
 
