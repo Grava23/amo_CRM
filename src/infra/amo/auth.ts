@@ -6,7 +6,7 @@ import { config } from "../../config.js"
 export function createAuthAPI(client: AmoClient) {
     return {
         async getAccessToken(code: string, domain: string): Promise<GetAccessTokenResponse> {
-            const url = new URL(`https://${domain}/oauth2/access_token"`)
+            const url = new URL(`https://${domain}/oauth2/access_token`)
 
             const body: GetAccessTokenRequest = {
                 client_id: config.AMO_CLIENT_ID,
@@ -31,7 +31,7 @@ export function createAuthAPI(client: AmoClient) {
         },
 
         async refreshToken(refreshToken: string, domain: string): Promise<GetAccessTokenResponse> {
-            const url = new URL(`https://${domain}/oauth2/access_token"`)
+            const url = new URL(`https://${domain}/oauth2/access_token`)
 
             const body: RefreshTokenRequest = {
                 client_id: config.AMO_CLIENT_ID,
