@@ -153,7 +153,7 @@ export class AmoClient {
 
         const bodyHash = createHash("md5")
             .update(bodyText)
-            .digest("base64")
+            .digest("hex")
 
         const url = new URL(request.url)
         const path = url.pathname
@@ -162,7 +162,7 @@ export class AmoClient {
 
         const signature = createHmac("sha1", config.AMO_CHANNEL_SECRET)
             .update(signatureString)
-            .digest("base64")
+            .digest("hex")
 
         request.headers.set("Content-Type", "application/json")
         request.headers.set("Date", date)

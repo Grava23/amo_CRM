@@ -100,7 +100,7 @@ export class AuthService {
     integration.amojoID = amojoID
 
     try {
-      const scopeID = await this.amoClient.chat.connectChatChannel(config.AMO_CHANNEL_ID)
+      const scopeID = await this.amoClient.chat.connectChatChannel(config.AMO_CHANNEL_ID, integration.amojoID)
       integration.scopeID = scopeID
     } catch (error) {
       logger.error("AuthService - completeOauth - connect chat channel", { error: error as Error })

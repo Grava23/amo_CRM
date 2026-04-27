@@ -5,11 +5,16 @@ import { GetMessageHistoryResponse } from "./response/chat.js";
 
 export function createChatAPI(client: AmoClient) {
     return {
-        async connectChatChannel(channelID: string): Promise<string> {
+        async connectChatChannel(channelID: string, accountID: string): Promise<string> {
             const url = new URL(`https://amojo.amocrm.ru/v2/origin/custom/${channelID}/connect`)
 
             let request = new Request(url, {
                 method: "POST",
+                body: JSON.stringify({
+                    account_id: accountID,
+                    title: "ChatsIntegration",
+                    hook_api_version: "v2",
+                }),
             })
 
             try {
