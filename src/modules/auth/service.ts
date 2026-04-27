@@ -34,6 +34,7 @@ export class AuthService {
     authorizeUrl.searchParams.set("state", state)
     authorizeUrl.searchParams.set("mode", "popup")
 
+    logger.debug("AuthService - start - authorize url", { authorizeUrl: authorizeUrl.toString() })
     return authorizeUrl.toString()
   }
 
