@@ -30,7 +30,7 @@ export class AuthService {
     }
 
     const authorizeUrl = new URL(config.AMO_OAUTH_URL)
-    authorizeUrl.searchParams.set("client_id", config.AMO_INTEGRATION_ID)
+    authorizeUrl.searchParams.set("client_id", config.AMO_CLIENT_ID)
     authorizeUrl.searchParams.set("state", state)
 
     logger.debug("AuthService - start - authorize url", { authorizeUrl: authorizeUrl.toString() })
