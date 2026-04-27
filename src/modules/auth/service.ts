@@ -80,6 +80,8 @@ export class AuthService {
       }
     }
 
+    integration.domain = domain
+
     try {
       const accessToken = await this.amoClient.auth.getAccessToken(code, domain)
 

@@ -41,6 +41,10 @@ export class AmoClient {
     async request<T>(
         request: Request
     ): Promise<T> {
+        // `fetch()` consumes the Request body stream. Since we retry, keep an unused
+        // template and clone it for each attempt.
+        const baseRequest = request.clone()
+
         logger.info(`HTTP request`, {
             url: request.url,
             method: request.method,
@@ -57,7 +61,8 @@ export class AmoClient {
             try {
                 return await this.limiter.schedule(async (): Promise<T> => {
                     return await this.breaker.exec(async (): Promise<T> => {
-                        const res = await fetch(request)
+                        const requestForAttempt = baseRequest.clone()
+                        const res = await fetch(requestForAttempt)
 
                         const text = await res.text()
 
@@ -65,8 +70,8 @@ export class AmoClient {
                             const status = res.status
 
                             logger.error(`HTTP request failed`, {
-                                url: request.url,
-                                method: request.method,
+                                url: requestForAttempt.url,
+                                method: requestForAttempt.method,
                                 status,
                                 statusText: res.statusText,
                                 text
@@ -82,8 +87,8 @@ export class AmoClient {
                         }
 
                         logger.info(`HTTP request successful`, {
-                            url: request.url,
-                            method: request.method,
+                            url: requestForAttempt.url,
+                            method: requestForAttempt.method,
                             status: res.status,
                             statusText: res.statusText,
                             text
@@ -102,11 +107,11 @@ export class AmoClient {
                         }
                     })
                 })
-            } catch (error) {
+            } catch (error: any) {
                 logger.error(`HTTP request error`, {
                     url: request.url,
                     method: request.method,
-                    error: error
+                    error: error?.message
                 })
 
                 // для ошибок 4xx и "Circuit breaker open" ретраи бессмысленны
@@ -122,7 +127,7 @@ export class AmoClient {
                         method: request.method,
                         attempt,
                         retries: this.retries,
-                        error: error
+                        error: error?.message
                     })
 
                     throw error
