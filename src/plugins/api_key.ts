@@ -11,6 +11,9 @@ function isPublicPath(path: string): boolean {
     if (path === "/health") return true
     if (path.startsWith("/auth/")) return true
     if (path.startsWith("/webhook/")) return true
+    // API v1 is mounted under `/api/v1/*`
+    if (path.startsWith("/api/v1/auth/")) return true
+    if (path.startsWith("/api/v1/webhook/")) return true
     return false
 }
 
