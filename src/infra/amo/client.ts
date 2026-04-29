@@ -221,10 +221,13 @@ class RateLimiter {
 class CircuitBreaker {
 
     private states = new Map<string, { failures: number; lastFailure: number; state: "closed" | "open" }>()
+    private callsSinceSweep = 0
 
     constructor(
         private threshold = 5,
-        private cooldown = 10000
+        private cooldown = 10000,
+        private stateTtlMs = 30 * 60 * 1000, // 30 минут
+        private sweepEveryCalls = 200
     ) { }
 
     private getState(key: string) {
@@ -234,6 +237,16 @@ class CircuitBreaker {
             this.states.set(key, s)
         }
         return s
+    }
+
+    private sweepStates(now = Date.now()) {
+        for (const [key, s] of this.states) {
+            const isIdle = now - s.lastFailure > this.stateTtlMs
+            const isHealthy = s.state === "closed" && s.failures === 0
+            if (isIdle && isHealthy) {
+                this.states.delete(key)
+            }
+        }
     }
 
     private isRetriableFailure(err: unknown): boolean {
@@ -253,6 +266,12 @@ class CircuitBreaker {
     }
 
     async exec<T>(key: string, fn: () => Promise<T>): Promise<T> {
+        this.callsSinceSweep++
+        if (this.callsSinceSweep >= this.sweepEveryCalls) {
+            this.callsSinceSweep = 0
+            this.sweepStates()
+        }
+
         const s = this.getState(key)
 
         if (s.state === "open") {
