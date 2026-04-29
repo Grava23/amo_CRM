@@ -37,7 +37,7 @@ export type OutboundLeadBundle = {
         id: number
         name: string
         first_name: string
-        last_name: string
+        last_name: string | null
         responsible_user_id: number | null
         created_at: string
         updated_at: string
@@ -144,7 +144,7 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
                     id: ch.contact.id,
                     name: ch.contact.name,
                     first_name: ch.contact.first_name,
-                    last_name: ch.contact.last_name,
+                    last_name: ch.contact.last_name ?? null,
                     responsible_user_id: ch.contact.responsible_user_id,
                     created_at: iso(ch.contact.created_at),
                     updated_at: iso(ch.contact.updated_at),
