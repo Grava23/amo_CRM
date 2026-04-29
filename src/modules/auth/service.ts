@@ -129,21 +129,18 @@ export class AuthService {
       await this.subscribeWebhook(integration)
     } catch (error) {
       logger.error("AuthService - completeOauth - subscribe webhook", { error: error as Error })
-      throw new Error(`AuthService - completeOauth - subscribe webhook: ${error as Error}`)
     }
 
     try {
       await this.loadContacts(integration)
     } catch (error) {
       logger.error("AuthService - completeOauth - load contacts", { error: error as Error })
-      throw new Error(`AuthService - completeOauth - load contacts: ${error as Error}`)
     }
 
     try {
       await this.loadLeads(integration)
     } catch (error) {
       logger.error("AuthService - completeOauth - load leads", { error: error as Error })
-      throw new Error(`AuthService - completeOauth - load leads: ${error as Error}`)
     }
   }
 

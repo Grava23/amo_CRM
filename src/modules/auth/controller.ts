@@ -24,16 +24,9 @@ export async function completeOauthController(req: FastifyRequest<{ Querystring:
   const repo = new AuthRepo(req.server.prisma)
   const service = new AuthService(repo, req.server.amoClient)
 
-  try {
-    await service.completeOauth(state, code, referer)
+  void service.completeOauth(state, code, referer).catch((error) => {
+    req.log.error({ error }, "completeOauthController - background processing failed")
+  })
 
-    return await reply.status(200).send({
-      message: "OK"
-    })
-  } catch (error) {
-    return await reply.status(500).send({
-      message: "Internal server error",
-      error: (error as Error).message
-    })
-  }
+  return reply.status(202).send({ message: "Accepted" })
 }
