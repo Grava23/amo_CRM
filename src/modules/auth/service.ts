@@ -150,43 +150,43 @@ export class AuthService {
   private async subscribeWebhook(integration: Integration) {
     const webhookSubscriptions: SubscribeRequest[] = [
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/contacts/add",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/contacts/add",
         settings: ["add_contact"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/contacts/update",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/contacts/update",
         settings: ["update_contact"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/contacts/delete",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/contacts/delete",
         settings: ["delete_contact",],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/contacts/restore",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/contacts/restore",
         settings: ["restore_contact"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/leads/add",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/leads/add",
         settings: ["add_lead"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/leads/update",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/leads/update",
         settings: ["update_lead"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/leads/delete",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/leads/delete",
         settings: ["delete_lead"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/leads/restore",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/leads/restore",
         settings: ["restore_lead"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/notes/add",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/notes/add",
         settings: ["note_lead"],
       },
       {
-        destination: "http://31.129.103.126:8080/api/v1/webhook/talks/add",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/talks/add",
         settings: ["add_talk"],
       }
     ]
