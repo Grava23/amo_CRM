@@ -60,7 +60,8 @@ export class AmoClient {
 
             try {
                 return await this.limiter.schedule(async (): Promise<T> => {
-                    return await this.breaker.exec(async (): Promise<T> => {
+                    const hostKey = new URL(request.url).host
+                    return await this.breaker.exec(hostKey, async (): Promise<T> => {
                         const requestForAttempt = baseRequest.clone()
                         const res = await fetch(requestForAttempt)
 
@@ -219,22 +220,46 @@ class RateLimiter {
 
 class CircuitBreaker {
 
-    private failures = 0
-    private lastFailure = 0
-    private state: "closed" | "open" = "closed"
+    private states = new Map<string, { failures: number; lastFailure: number; state: "closed" | "open" }>()
 
     constructor(
         private threshold = 5,
         private cooldown = 10000
     ) { }
 
-    async exec<T>(fn: () => Promise<T>): Promise<T> {
+    private getState(key: string) {
+        let s = this.states.get(key)
+        if (!s) {
+            s = { failures: 0, lastFailure: 0, state: "closed" }
+            this.states.set(key, s)
+        }
+        return s
+    }
 
-        if (this.state === "open") {
+    private isRetriableFailure(err: unknown): boolean {
+        const msg = (err as any)?.message ? String((err as any).message) : ""
+        // Не считаем 4xx "поломкой сервиса": они обычно постоянные (403/400) и не должны открывать брейкер.
+        if (msg.startsWith("HTTP 4")) return false
 
-            if (Date.now() - this.lastFailure > this.cooldown) {
-                this.state = "closed"
-                this.failures = 0
+        // 429/5xx/сеть — временные, их можно считать сигналом для брейкера.
+        if (msg.startsWith("HTTP 5")) return true
+        if (msg.startsWith("HTTP 429")) return true
+        if (msg.startsWith("HTTP_RETRYABLE_")) return true
+
+        // node-fetch/undici/network ошибки часто приходят без "HTTP NNN"
+        if (/ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|fetch failed/i.test(msg)) return true
+
+        return false
+    }
+
+    async exec<T>(key: string, fn: () => Promise<T>): Promise<T> {
+        const s = this.getState(key)
+
+        if (s.state === "open") {
+
+            if (Date.now() - s.lastFailure > this.cooldown) {
+                s.state = "closed"
+                s.failures = 0
             } else {
                 throw new Error("Circuit breaker open")
             }
@@ -244,17 +269,19 @@ class CircuitBreaker {
 
             const res = await fn()
 
-            this.failures = 0
+            s.failures = 0
 
             return res
 
         } catch (err) {
 
-            this.failures++
-            this.lastFailure = Date.now()
+            if (this.isRetriableFailure(err)) {
+                s.failures++
+                s.lastFailure = Date.now()
 
-            if (this.failures >= this.threshold) {
-                this.state = "open"
+                if (s.failures >= this.threshold) {
+                    s.state = "open"
+                }
             }
 
             throw err
