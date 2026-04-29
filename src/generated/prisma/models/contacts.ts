@@ -205,7 +205,7 @@ export type ContactsGroupByOutputType = {
   id: number
   name: string
   first_name: string
-  last_name: string
+  last_name: string | null
   responsible_user_id: number | null
   created_at: Date
   updated_at: Date
@@ -239,7 +239,7 @@ export type contactsWhereInput = {
   id?: Prisma.IntFilter<"contacts"> | number
   name?: Prisma.StringFilter<"contacts"> | string
   first_name?: Prisma.StringFilter<"contacts"> | string
-  last_name?: Prisma.StringFilter<"contacts"> | string
+  last_name?: Prisma.StringNullableFilter<"contacts"> | string | null
   responsible_user_id?: Prisma.IntNullableFilter<"contacts"> | number | null
   created_at?: Prisma.DateTimeFilter<"contacts"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"contacts"> | Date | string
@@ -251,7 +251,7 @@ export type contactsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   first_name?: Prisma.SortOrder
-  last_name?: Prisma.SortOrder
+  last_name?: Prisma.SortOrderInput | Prisma.SortOrder
   responsible_user_id?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -266,7 +266,7 @@ export type contactsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.contactsWhereInput | Prisma.contactsWhereInput[]
   name?: Prisma.StringFilter<"contacts"> | string
   first_name?: Prisma.StringFilter<"contacts"> | string
-  last_name?: Prisma.StringFilter<"contacts"> | string
+  last_name?: Prisma.StringNullableFilter<"contacts"> | string | null
   responsible_user_id?: Prisma.IntNullableFilter<"contacts"> | number | null
   created_at?: Prisma.DateTimeFilter<"contacts"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"contacts"> | Date | string
@@ -278,7 +278,7 @@ export type contactsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   first_name?: Prisma.SortOrder
-  last_name?: Prisma.SortOrder
+  last_name?: Prisma.SortOrderInput | Prisma.SortOrder
   responsible_user_id?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -297,7 +297,7 @@ export type contactsScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"contacts"> | number
   name?: Prisma.StringWithAggregatesFilter<"contacts"> | string
   first_name?: Prisma.StringWithAggregatesFilter<"contacts"> | string
-  last_name?: Prisma.StringWithAggregatesFilter<"contacts"> | string
+  last_name?: Prisma.StringNullableWithAggregatesFilter<"contacts"> | string | null
   responsible_user_id?: Prisma.IntNullableWithAggregatesFilter<"contacts"> | number | null
   created_at?: Prisma.DateTimeWithAggregatesFilter<"contacts"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"contacts"> | Date | string
@@ -308,7 +308,7 @@ export type contactsCreateInput = {
   id: number
   name: string
   first_name: string
-  last_name: string
+  last_name?: string | null
   responsible_user_id?: number | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -320,7 +320,7 @@ export type contactsUncheckedCreateInput = {
   id: number
   name: string
   first_name: string
-  last_name: string
+  last_name?: string | null
   responsible_user_id?: number | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -332,7 +332,7 @@ export type contactsUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsible_user_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -344,7 +344,7 @@ export type contactsUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsible_user_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -356,7 +356,7 @@ export type contactsCreateManyInput = {
   id: number
   name: string
   first_name: string
-  last_name: string
+  last_name?: string | null
   responsible_user_id?: number | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -367,7 +367,7 @@ export type contactsUpdateManyMutationInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsible_user_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -378,7 +378,7 @@ export type contactsUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsible_user_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -467,7 +467,7 @@ export type contactsCreateWithoutChatsInput = {
   id: number
   name: string
   first_name: string
-  last_name: string
+  last_name?: string | null
   responsible_user_id?: number | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -478,7 +478,7 @@ export type contactsUncheckedCreateWithoutChatsInput = {
   id: number
   name: string
   first_name: string
-  last_name: string
+  last_name?: string | null
   responsible_user_id?: number | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -505,7 +505,7 @@ export type contactsUpdateWithoutChatsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsible_user_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -516,7 +516,7 @@ export type contactsUncheckedUpdateWithoutChatsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsible_user_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -617,7 +617,7 @@ export type $contactsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: number
     name: string
     first_name: string
-    last_name: string
+    last_name: string | null
     responsible_user_id: number | null
     created_at: Date
     updated_at: Date
