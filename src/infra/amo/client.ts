@@ -79,6 +79,13 @@ export class AmoClient {
 
                             // 4xx — не ретраим, сразу выбрасываем наружу
                             if (status >= 400 && status < 500) {
+                                // amoCRM иногда валидирует destination через DNS и может временно не разрезолвить хост
+                                // (типичный кейс: "The host could not be resolved."). Такой 4xx имеет смысл ретраить.
+                                const isRetriableResolveError =
+                                    status === 400 && /host could not be resolved/i.test(text)
+                                if (isRetriableResolveError) {
+                                    throw new Error(`HTTP_RETRYABLE_${status}: ${text}`)
+                                }
                                 throw new Error(`HTTP ${status}: ${text}`)
                             }
 
@@ -118,10 +125,13 @@ export class AmoClient {
                 const message = (error as Error)?.message ?? ""
                 const isClientError =
                     message.startsWith("HTTP 4") // HTTP 4xx
+                const isRetriableClientError =
+                    message.startsWith("HTTP_RETRYABLE_4") ||
+                    /host could not be resolved/i.test(message)
                 const isCircuitOpen =
                     message.includes("Circuit breaker open")
 
-                if (isClientError || isCircuitOpen || attempt >= this.retries) {
+                if ((isClientError && !isRetriableClientError) || isCircuitOpen || attempt >= this.retries) {
                     logger.error(`HTTP request failed after retries`, {
                         url: request.url,
                         method: request.method,

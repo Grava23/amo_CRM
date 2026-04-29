@@ -50,7 +50,7 @@ const webhookRoutes: FastifyPluginAsync = async (app) => {
         },
         handleRestoreContactWebhookController
     )
-    app.post("/leds/add",
+    app.post("/leads/add",
         {
             schema:
             {
@@ -60,7 +60,7 @@ const webhookRoutes: FastifyPluginAsync = async (app) => {
         handleAddLeadWebhookController
     )
     //* на status_update и responsible_user_id нет смысла подписываться, то же самое приходит в update
-    app.post("/leds/update",
+    app.post("/leads/update",
         {
             schema:
             {
@@ -69,7 +69,7 @@ const webhookRoutes: FastifyPluginAsync = async (app) => {
         },
         handleUpdateLeadWebhookController
     )
-    app.post("/leds/delete",
+    app.post("/leads/delete",
         {
             schema:
             {
@@ -78,7 +78,7 @@ const webhookRoutes: FastifyPluginAsync = async (app) => {
         },
         handleDeleteLeadWebhookController
     )
-    app.post("/leds/restore",
+    app.post("/leads/restore",
         {
             schema:
             {
