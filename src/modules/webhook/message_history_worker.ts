@@ -65,7 +65,8 @@ class MessageHistoryWorkerManager {
         try {
             await this.collectAllAvailable({ repo, integration, conversationID, limit })
         } catch (error) {
-            logger.error("MessageHistoryWorker - failed", { conversationID, error })
+            const err = error as Error
+            logger.error("MessageHistoryWorker - failed", { conversationID, err, errorMessage: err?.message })
         } finally {
             release()
             this.perChatRunning.delete(conversationID)
