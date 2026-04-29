@@ -231,9 +231,14 @@ export class AuthService {
         }
 
         try {
-          await this.authRepo.createContact(contactModel)
+          await this.authRepo.upsertContact(contactModel)
         } catch (error) {
-          logger.error("AuthService - completeOauth - create contact", { error: error as Error })
+          const err = error as Error
+          logger.error("AuthService - completeOauth - upsert contact", {
+            err,
+            errorMessage: err?.message,
+            contact: contactModel,
+          })
           continue
         }
       }

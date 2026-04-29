@@ -86,6 +86,25 @@ export class AuthRepo {
     })
   }
 
+  async upsertContact(contact: Contact) {
+    return await this.prisma.contacts.upsert({
+      where: { id: contact.id },
+      update: {
+        name: contact.name,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        responsible_user_id: contact.responsible_user_id,
+      },
+      create: {
+        id: contact.id,
+        name: contact.name,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        responsible_user_id: contact.responsible_user_id,
+      },
+    })
+  }
+
   async upsertLead(lead: Lead) {
     return await this.prisma.leads.upsert({
       where: { id: lead.id },

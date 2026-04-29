@@ -97,8 +97,7 @@ export class AmoClient {
                             url: requestForAttempt.url,
                             method: requestForAttempt.method,
                             status: res.status,
-                            statusText: res.statusText,
-                            text
+                            statusText: res.statusText
                         })
 
                         // 204 No Content или пустое тело — возвращаем undefined/null как T
