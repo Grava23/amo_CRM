@@ -9,7 +9,6 @@ import apiKeyPlugin from "./plugins/api_key.js"
 import authRoutes from "./modules/auth/routes.js"
 import integrationRoutes from "./modules/integration/routes.js"
 import webhookRoutes from "./modules/webhook/routes.js"
-import { startChatHistoryPolling } from "./modules/webhook/history_polling.js"
 import { WebhookRepo } from "./modules/webhook/repo.js"
 import callsRoutes from "./modules/calls/routes.js"
 import outboundSyncRoutes from "./modules/outbound_sync/routes.js"
@@ -60,9 +59,6 @@ export async function run() {
         await v1.register(outboundSyncRoutes, { prefix: "/outbound-sync" })
     }, { prefix: "/api/v1" })
 
-    // Pull-based сбор будущих сообщений: периодически догружаем историю по offset.
-    // Воркеры не конфликтуют: 1 воркер на чат + глобальный лимит параллельности + RPS лимитер в AmoClient.
-    startChatHistoryPolling({ repo: new WebhookRepo(app.prisma), amoClient: app.amoClient })
     startOutboundSyncWorker({ prisma: app.prisma })
 
     await app.listen({

@@ -14,6 +14,8 @@ import { GetLeadsResponse } from "../../infra/amo/response/leads.js"
 import { Lead } from "../../models/leads.js"
 import { withAmoTokenRefresh } from "../../infra/amo/with_token_refresh.js"
 import { rowsFromAmoApiCustomFieldsValues } from "../lead_custom_fields/build_rows.js"
+import { GetCallNotesResponse } from "../../infra/amo/response/notes.js"
+import { Call } from "../../models/calls.js"
 
 export class AuthService {
   constructor(private authRepo: AuthRepo, private amoClient: AmoClient) { }
@@ -306,6 +308,95 @@ export class AuthService {
         } catch (error) {
           logger.error("AuthService - completeOauth - upsert lead", { error: error as Error })
           continue
+        }
+
+        let page = 1
+
+        while (true) {
+          let resp: GetCallNotesResponse
+          try {
+            resp = await withAmoTokenRefresh(
+              integration,
+              this.authRepo,
+              this.amoClient.auth,
+              (accessToken) => this.amoClient.notes.getNotesByEntityTypeAndID(integration.domain, accessToken, "leads", lead.id, {
+                page: page,
+                limit: 250,
+                filter: {
+                  note_type: ["call_in", "call_out"],
+                }
+              })
+            )
+          } catch (error) {
+            logger.error("AuthService - completeOauth - get call notes", { error: error as Error })
+            break
+          }
+
+          const notes = resp?._embedded?.notes
+          if (!Array.isArray(notes)) {
+            logger.warn("AuthService - completeOauth - notes response malformed", { leadID: lead.id, page })
+            break
+          }
+
+          if (notes.length === 0) {
+            logger.info("AuthService - completeOauth - no call notes", { leadID: lead.id, page })
+            break
+          }
+
+          logger.info("AuthService - completeOauth - fetched notes", { leadID: lead.id, page, count: notes.length })
+
+          for (const note of notes) {
+            // call_in: params.call_responsible — уже имя (строка). call_out — id пользователя, имя через API.
+            let call_responsible_name: string | null = null
+            if (note.note_type === "call_in") {
+              call_responsible_name = note.params.call_responsible
+            } else {
+              try {
+                const user = await withAmoTokenRefresh(
+                  integration,
+                  this.authRepo,
+                  this.amoClient.auth,
+                  (accessToken) => this.amoClient.users.getUserByID(
+                    integration.domain,
+                    accessToken,
+                    note.params.call_responsible,
+                    {},
+                  ),
+                )
+                call_responsible_name = user.name ?? null
+              } catch (error) {
+                logger.warn("AuthService - completeOauth - get user for call_out failed", {
+                  responsibleUserId: note.params.call_responsible,
+                  error: error as Error,
+                })
+              }
+            }
+
+            const call: Call = {
+              uuid: note.params.uniq,
+              direction: note.note_type === "call_in" ? "in" : "out",
+              duration: note.params.duration,
+              source: note.params.source,
+              link: note.params.link,
+              phone: note.params.phone,
+              call_responsible: note.params.call_responsible.toString(),
+              call_responsible_name,
+              timestamp: note.created_at,
+              lead_id: lead.id,
+            }
+
+            try {
+              await this.authRepo.upsertCall(call)
+            } catch (error) {
+              logger.error("AuthService - completeOauth - failed to upsert call", { error: error as Error })
+              continue
+            }
+          }
+
+          if (resp._links?.next === undefined) {
+            break
+          }
+          page++
         }
 
         try {

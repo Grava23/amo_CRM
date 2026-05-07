@@ -5,6 +5,7 @@ import { Lead } from "../../models/leads.js"
 import { OAuthState } from "../../models/oauth_state.js"
 import type { LeadCustomFieldSyncRow } from "../lead_custom_fields/types.js"
 import { runLeadCustomFieldsSyncIfConfigured } from "../lead_custom_fields/run_sync.js"
+import { Call } from "../../models/calls.js"
 
 export class AuthRepo {
   constructor(private prisma: PrismaClient) { }
@@ -128,6 +129,35 @@ export class AuthRepo {
 
   async syncLeadCustomFieldsRows(leadId: number, rows: LeadCustomFieldSyncRow[] | undefined) {
     await runLeadCustomFieldsSyncIfConfigured(this.prisma, leadId, rows)
+  }
+
+  async upsertCall(call: Call) {
+    return await this.prisma.calls.upsert({
+      where: { uuid: call.uuid },
+      update: {
+        direction: call.direction,
+        duration: call.duration,
+        source: call.source,
+        link: call.link,
+        phone: call.phone,
+        call_responsible: call.call_responsible,
+        call_responsible_name: call.call_responsible_name,
+        timestamp: call.timestamp,
+        lead: { connect: { id: call.lead_id } },
+      },
+      create: {
+        uuid: call.uuid,
+        direction: call.direction,
+        duration: call.duration,
+        source: call.source,
+        link: call.link,
+        phone: call.phone,
+        call_responsible: call.call_responsible,
+        call_responsible_name: call.call_responsible_name,
+        timestamp: call.timestamp,
+        lead: { connect: { id: call.lead_id } },
+      },
+    })
   }
 }
 

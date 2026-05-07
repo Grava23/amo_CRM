@@ -10,11 +10,11 @@ import { Chat } from "../../models/chat.js";
 import { GetLeadResponse } from "../../infra/amo/response/leads.js";
 import { Lead } from "../../models/leads.js";
 import { GetContactResponse } from "../../infra/amo/response/contact.js";
-import { getMessageHistoryWorkerManager } from "./message_history_worker.js";
 import { rowsFromAmoApiCustomFieldsValues, rowsFromWebhookCustomFields } from "../lead_custom_fields/build_rows.js";
 import { Message } from "../../models/messages.js";
 import { Call } from "../../models/calls.js";
 import { isPrismaNotFoundError } from "../../utils/prisma_not_found.js";
+import { GetCallNotesResponse } from "../../infra/amo/response/notes.js";
 
 export class WebhookService {
     constructor(private repo: WebhookRepo, private amoClient: AmoClient) { }
@@ -217,12 +217,6 @@ export class WebhookService {
                 logger.error("WebhookService - handleAddTalkWebhook - Failed to create chat", { error })
                 continue
             }
-
-            getMessageHistoryWorkerManager(this.amoClient).enqueue({
-                repo: this.repo,
-                integration,
-                conversationID: talkResp.chat_id,
-            })
         }
     }
 
@@ -271,6 +265,102 @@ export class WebhookService {
                 await this.syncLeadCustomFieldsFromWebhook(leadModel.id, lead.custom_fields)
             } catch (error) {
                 logger.error("WebhookService - handleAddLeadWebhook - Failed to sync lead custom fields", { error })
+            }
+
+            if (!integration) {
+                logger.warn("WebhookService - handleAddLeadWebhook - Integration not found, skipping calls sync", { domain, leadID: leadModel.id })
+                continue
+            }
+
+            const callsIntegration = integration
+
+            let page = 1
+
+            while (true) {
+                let resp: GetCallNotesResponse
+                try {
+                    resp = await withAmoTokenRefresh(
+                        callsIntegration,
+                        this.repo,
+                        this.amoClient.auth,
+                        (accessToken) => this.amoClient.notes.getNotesByEntityTypeAndID(callsIntegration.domain, accessToken, "leads", parseInt(lead.id), {
+                            page: page,
+                            limit: 250,
+                            filter: {
+                                note_type: ["call_in", "call_out"],
+                            }
+                        })
+                    )
+                } catch (error) {
+                    logger.error("WebhookService - handleAddLeadWebhook - get call notes", { error: error as Error })
+                    break
+                }
+
+                const notes = resp?._embedded?.notes
+                if (!Array.isArray(notes)) {
+                    logger.warn("WebhookService - handleAddLeadWebhook - notes response malformed", { leadID: lead.id, page })
+                    break
+                }
+
+                if (notes.length === 0) {
+                    logger.info("WebhookService - handleAddLeadWebhook - no call notes", { leadID: lead.id, page })
+                    break
+                }
+
+                logger.info("WebhookService - handleAddLeadWebhook - fetched call notes", { leadID: lead.id, page, count: notes.length })
+
+                for (const note of notes) {
+                    // call_in: params.call_responsible — уже имя (строка). call_out — id пользователя, имя через API.
+                    let call_responsible_name: string | null = null
+                    if (note.note_type === "call_in") {
+                        call_responsible_name = note.params.call_responsible
+                    } else {
+                        try {
+                            const user = await withAmoTokenRefresh(
+                                callsIntegration,
+                                this.repo,
+                                this.amoClient.auth,
+                                (accessToken) => this.amoClient.users.getUserByID(
+                                    callsIntegration.domain,
+                                    accessToken,
+                                    note.params.call_responsible,
+                                    {},
+                                ),
+                            )
+                            call_responsible_name = user.name ?? null
+                        } catch (error) {
+                            logger.warn("WebhookService - handleAddLeadWebhook - get user for call_out failed", {
+                                responsibleUserId: note.params.call_responsible,
+                                error: error as Error,
+                            })
+                        }
+                    }
+
+                    const call: Call = {
+                        uuid: note.params.uniq,
+                        direction: note.note_type === "call_in" ? "in" : "out",
+                        duration: note.params.duration,
+                        source: note.params.source,
+                        link: note.params.link,
+                        phone: note.params.phone,
+                        call_responsible: note.params.call_responsible.toString(),
+                        call_responsible_name,
+                        timestamp: note.created_at,
+                        lead_id: parseInt(lead.id),
+                    }
+
+                    try {
+                        await this.repo.upsertCall(call)
+                    } catch (error) {
+                        logger.error("WebhookService - handleAddLeadWebhook - failed to upsert call", { error: error as Error })
+                        continue
+                    }
+                }
+
+                if (resp._links?.next === undefined) {
+                    break
+                }
+                page++
             }
         }
     }
@@ -429,12 +519,71 @@ export class WebhookService {
                             (accessToken) => this.amoClient.talks.getTalk(subdomain, accessToken, parseInt(message.talk_id))
                         )
                     } catch (error) {
-                        logger.error("WebhookService - handleAddMessageWebhook - Failed to get talk", { error })
+                        logger.error("WebhookService - handleAddMessageWebhook - Failed to get talk", { talkID: message.talk_id, error: error as Error })
+                        continue
+                    }
+
+                    if (!talkResp) {
+                        logger.error("WebhookService - handleAddMessageWebhook - Talk response is empty", { talkID: message.talk_id })
                         continue
                     }
 
                     if (talkResp.entity_type != "lead" || talkResp.entity_id === null) {
                         logger.warn("WebhookService - handleAddMessageWebhook - Talk entity type is not lead", { talk_id: message.talk_id })
+                        continue
+                    }
+
+                    const leadID = talkResp.entity_id
+                    const contactID = talkResp.contact_id
+
+                    // В БД может ещё не быть лида/контакта (webhook order).
+                    // Prisma nested connect в createChat требует существующие записи.
+                    try {
+                        const leadResp = await withAmoTokenRefresh(
+                            integration,
+                            this.repo,
+                            this.amoClient.auth,
+                            (accessToken) => this.amoClient.leads.getLead(subdomain, accessToken, leadID, {}),
+                        )
+
+                        const leadModel: Lead = {
+                            id: leadResp.id,
+                            name: leadResp.name,
+                            responsible_user_id: leadResp.responsible_user_id,
+                            responsible_user_name: null,
+                            pipeline_id: leadResp.pipeline_id,
+                            status_id: leadResp.status_id,
+                        }
+
+                        await this.repo.upsertLead(leadModel)
+                        await this.repo.syncLeadCustomFieldsRows(
+                            leadModel.id,
+                            rowsFromAmoApiCustomFieldsValues(leadResp.custom_fields_values),
+                        )
+                    } catch (error) {
+                        logger.error("WebhookService - handleAddMessageWebhook - Failed to upsert lead before chat create", { error })
+                        continue
+                    }
+
+                    try {
+                        const contactResp = await withAmoTokenRefresh(
+                            integration,
+                            this.repo,
+                            this.amoClient.auth,
+                            (accessToken) => this.amoClient.contact.getContact(subdomain, accessToken, contactID, {}),
+                        )
+
+                        const contactModel: Contact = {
+                            id: contactResp.id,
+                            name: contactResp.name,
+                            responsible_user_id: contactResp.responsible_user_id,
+                            first_name: contactResp.first_name,
+                            last_name: contactResp.last_name,
+                        }
+
+                        await this.repo.upsertContact(contactModel)
+                    } catch (error) {
+                        logger.error("WebhookService - handleAddMessageWebhook - Failed to upsert contact before chat create", { error })
                         continue
                     }
 
@@ -451,11 +600,11 @@ export class WebhookService {
                     try {
                         await this.repo.createChat(chat)
                     } catch (error) {
-                        logger.error("WebhookService - handleAddMessageWebhook - Failed to create chat", { error })
+                        logger.error("WebhookService - handleAddMessageWebhook - Failed to create chat", { chatID: message.chat_id, error: error as Error })
                         continue
                     }
                 } else {
-                    logger.error("WebhookService - handleAddMessageWebhook - Failed to get chat", { error })
+                    logger.error("WebhookService - handleAddMessageWebhook - Failed to get chat", { chatID: message.chat_id, error: error as Error })
                     continue
                 }
             }
