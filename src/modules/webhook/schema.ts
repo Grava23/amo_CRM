@@ -290,9 +290,18 @@ const leadSchema = z.object({
     custom_fields: z.array(z.object({
         id: z.coerce.number(),
         name: z.string(),
-        values: z.array(z.object({
-            value: z.any(),
-        })),
+        values: z.preprocess(
+            (val) => {
+                // amo может прислать values как массив [{value: ...}]
+                // или как объект вида {"[0][value]": "..."}.
+                if (Array.isArray(val)) return val
+                if (val && typeof val === "object") {
+                    return Object.values(val as Record<string, unknown>).map((value) => ({ value }))
+                }
+                return val
+            },
+            z.array(z.object({ value: z.any() })),
+        ),
     })).optional(),
     created_at: z.coerce.string(),
     updated_at: z.coerce.string(),
