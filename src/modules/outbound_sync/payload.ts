@@ -85,56 +85,11 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
     // Prisma client types могут отставать от schema.prisma во время разработки.
     // Используем `any`, чтобы не блокировать сборку payload при изменении связей lead↔chats.
     const prismaAny = prisma as any
-    let rows: any[] = []
-    try {
-        // Новая схема: lead.chats (one-to-many)
-        rows = await prismaAny.leads.findMany({
-            where: { deleted_at: null },
-            orderBy: { id: "asc" },
-            include: {
-                custom_fields: true,
-                calls: {
-                    where: { deleted_at: null },
-                    orderBy: { timestamp: "asc" },
-                },
-                chats: {
-                    where: { deleted_at: null },
-                    include: {
-                        contact: true,
-                        messages: {
-                            where: { deleted_at: null },
-                            orderBy: { sent_at: "asc" },
-                        },
-                    },
-                },
-            },
-        })
-    } catch {
-        // Старая схема (в проде до миграции): lead.chat (one-to-one)
-        rows = await prismaAny.leads.findMany({
-            where: { deleted_at: null },
-            orderBy: { id: "asc" },
-            include: {
-                custom_fields: true,
-                calls: {
-                    where: { deleted_at: null },
-                    orderBy: { timestamp: "asc" },
-                },
-                chat: {
-                    where: { deleted_at: null },
-                    include: {
-                        contact: true,
-                        messages: {
-                            where: { deleted_at: null },
-                            orderBy: { sent_at: "asc" },
-                        },
-                    },
-                },
-            },
-        })
-    }
+    // Важно: include'ы через relation IN (...) могут взорваться по кол-ву параметров,
+    // если сделок/чатов много. Поэтому читаем батчами.
+    const BATCH_SIZE = 500
 
-    const leads: OutboundLeadBundle[] = rows.map((row) => {
+    const mapRow = (row: any): OutboundLeadBundle => {
         const chats: any[] = Array.isArray(row.chats)
             ? row.chats
             : row.chat
@@ -211,7 +166,84 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
                         : null,
                 })),
         }
-    })
+    }
+
+    const leads: OutboundLeadBundle[] = []
+    let lastId: number | null = null
+
+    // Пытаемся сначала с новой связью lead.chats, иначе — со старой lead.chat.
+    let useChats = true
+
+    while (true) {
+        let rows: any[] = []
+        const where = lastId === null
+            ? { deleted_at: null }
+            : { deleted_at: null, id: { gt: lastId } }
+
+        try {
+            if (useChats) {
+                rows = await prismaAny.leads.findMany({
+                    where,
+                    orderBy: { id: "asc" },
+                    take: BATCH_SIZE,
+                    include: {
+                        custom_fields: true,
+                        calls: {
+                            where: { deleted_at: null },
+                            orderBy: { timestamp: "asc" },
+                        },
+                        chats: {
+                            where: { deleted_at: null },
+                            include: {
+                                contact: true,
+                                messages: {
+                                    where: { deleted_at: null },
+                                    orderBy: { sent_at: "asc" },
+                                },
+                            },
+                        },
+                    },
+                })
+            } else {
+                rows = await prismaAny.leads.findMany({
+                    where,
+                    orderBy: { id: "asc" },
+                    take: BATCH_SIZE,
+                    include: {
+                        custom_fields: true,
+                        calls: {
+                            where: { deleted_at: null },
+                            orderBy: { timestamp: "asc" },
+                        },
+                        chat: {
+                            where: { deleted_at: null },
+                            include: {
+                                contact: true,
+                                messages: {
+                                    where: { deleted_at: null },
+                                    orderBy: { sent_at: "asc" },
+                                },
+                            },
+                        },
+                    },
+                })
+            }
+        } catch (e: any) {
+            // Если это самая первая попытка и поле chats не существует — переключаемся на старую схему.
+            if (useChats) {
+                useChats = false
+                continue
+            }
+            throw e
+        }
+
+        if (rows.length === 0) break
+
+        for (const row of rows) {
+            leads.push(mapRow(row))
+            lastId = row.id
+        }
+    }
 
     return { sent_at: new Date().toISOString(), leads }
 }
