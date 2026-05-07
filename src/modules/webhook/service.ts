@@ -87,6 +87,8 @@ export class WebhookService {
     }
 
     async handleAddTalkWebhook(body: AddTalkWebhookBody) {
+        logger.debug("WebhookService - handleAddTalkWebhook - received request", { body })
+
         const subdomain = body.account.subdomain + ".amocrm.ru"
 
         let integration: Integration | null = null
