@@ -7,13 +7,7 @@ import { Lead } from "../../models/leads.js"
 import { withAmoTokenRefresh } from "../../infra/amo/with_token_refresh.js"
 import { GetCallNotesResponse } from "../../infra/amo/response/notes.js"
 import { Call } from "../../models/calls.js"
-
-function isPrismaNotFoundError(error: unknown): boolean {
-    return typeof error === "object"
-        && error !== null
-        && "code" in error
-        && (error as { code?: unknown }).code === "P2025"
-}
+import { isPrismaNotFoundError } from "../../utils/prisma_not_found.js"
 
 type EnqueueArgs = {
     repo: WebhookRepo

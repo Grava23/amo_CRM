@@ -297,4 +297,10 @@ export class WebhookRepo {
             },
         })
     }
+
+    async getChatByID(id: string): Promise<Chat> {
+        return await this.prisma.chats.findUniqueOrThrow({
+            where: { id },
+        })
+    }
 }

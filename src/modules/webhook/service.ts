@@ -14,6 +14,7 @@ import { getMessageHistoryWorkerManager } from "./message_history_worker.js";
 import { rowsFromAmoApiCustomFieldsValues, rowsFromWebhookCustomFields } from "../lead_custom_fields/build_rows.js";
 import { Message } from "../../models/messages.js";
 import { Call } from "../../models/calls.js";
+import { isPrismaNotFoundError } from "../../utils/prisma_not_found.js";
 
 export class WebhookService {
     constructor(private repo: WebhookRepo, private amoClient: AmoClient) { }
@@ -24,71 +25,6 @@ export class WebhookService {
     ) {
         await this.repo.syncLeadCustomFieldsRows(leadId, rowsFromWebhookCustomFields(custom_fields))
     }
-
-    // async handleOutgoingMessageWebhook(scope_id: string, body: IncomingMessageWebhookBody) {
-    //     let source: Source | null = null
-    //     try {
-    //         source = await this.repo.getSourceByExternalID(body.message.source.external_id.toString())
-
-    //         if (!source) {
-    //             logger.warn("WebhookService - handleWebhook - Source not found", { external_id: body.message.source.external_id.toString() })
-
-    //             try {
-    //                 let integration = await this.repo.getIntegrationByScopeID(scope_id)
-
-    //                 const sourceResp: GetSourcesResponse = await withAmoTokenRefresh(
-    //                     integration,
-    //                     this.repo,
-    //                     this.amoClient.auth,
-    //                     (accessToken) => this.amoClient.sources.getSources(
-    //                         integration.domain,
-    //                         accessToken,
-    //                         [body.message.source.external_id.toString()]
-    //                     )
-    //                 )
-
-    //                 if (sourceResp._embedded.sources.length > 0) {
-    //                     source = {
-    //                         external_id: sourceResp._embedded.sources[0]!.external_id.toString(),
-    //                         name: sourceResp._embedded.sources[0]!.name,
-    //                         pipeline_id: sourceResp._embedded.sources[0]!.pipeline_id,
-    //                         integration_domain: integration.domain,
-    //                         amo_id: sourceResp._embedded.sources[0]!.id,
-    //                     }
-
-    //                     try {
-    //                         await this.repo.createSource(source)
-    //                     } catch (error) {
-    //                         logger.error("WebhookService - handleWebhook - Failed to create source", { error })
-    //                     }
-    //                 }
-    //             } catch (error) {
-    //                 logger.error("WebhookService - handleWebhook - Failed to get integration", { error })
-    //                 throw new Error("WebhookService - handleWebhook - Failed to get integration")
-    //             }
-    //         }
-    //     } catch (error) {
-    //         logger.error("WebhookService - handleWebhook - Failed to get source", { error })
-    //         throw new Error("WebhookService - handleWebhook - Failed to get source")
-    //     }
-
-    //     const message: Message = {
-    //         id: body.message.message.id,
-    //         type: body.message.message.type,
-    //         text: body.message.message.text,
-    //         media: body.message.message.media,
-    //         role: "manager",
-    //         sent_at: new Date(body.message.msec_timestamp),
-    //         source_id: source?.external_id ?? body.message.source.external_id.toString(),
-    //     }
-
-    //     try {
-    //         await this.repo.createMessage(message)
-    //     } catch (error) {
-    //         logger.error("WebhookService - handleWebhook - Failed to create message", { error })
-    //         throw new Error("WebhookService - handleWebhook - Failed to create message: " + error)
-    //     }
-    // }
 
     async handleAddContactWebhook(body: AddContactWebhookBody) {
         for (const contact of body.contacts.add) {
@@ -464,11 +400,73 @@ export class WebhookService {
                 messageText = message.text
             }
 
+            try {
+                await this.repo.getChatByID(message.chat_id)
+            } catch (error) {
+                if (isPrismaNotFoundError(error)) {
+                    logger.warn("WebhookService - handleAddMessageWebhook - Chat not found", { chatID: message.chat_id })
+
+                    const subdomain = `${body.account.subdomain}.amocrm.ru`
+
+                    let integration: Integration | null = null
+                    try {
+                        integration = await this.repo.getIntegrationByDomain(subdomain)
+                    } catch (error) {
+                        logger.error("WebhookService - handleAddMessageWebhook - Failed to get integration", { error })
+                        continue
+                    }
+
+                    let talkResp: GetTalkResponse | null = null
+                    try {
+                        talkResp = await withAmoTokenRefresh(
+                            integration,
+                            this.repo,
+                            this.amoClient.auth,
+                            (accessToken) => this.amoClient.talks.getTalk(subdomain, accessToken, parseInt(message.talk_id))
+                        )
+                    } catch (error) {
+                        logger.error("WebhookService - handleAddMessageWebhook - Failed to get talk", { error })
+                        continue
+                    }
+
+                    if (talkResp.entity_type != "lead" || talkResp.entity_id === null) {
+                        logger.warn("WebhookService - handleAddMessageWebhook - Talk entity type is not lead", { talk_id: message.talk_id })
+                        continue
+                    }
+
+                    const chat: Chat = {
+                        id: message.chat_id,
+                        talk_id: parseInt(message.talk_id),
+                        origin: talkResp.origin,
+                        conversation_id: message.chat_id,
+                        integration_domain: integration.domain,
+                        lead_id: talkResp.entity_id,
+                        contact_id: talkResp.contact_id,
+                    }
+
+                    try {
+                        await this.repo.createChat(chat)
+                    } catch (error) {
+                        logger.error("WebhookService - handleAddMessageWebhook - Failed to create chat", { error })
+                        continue
+                    }
+                } else {
+                    logger.error("WebhookService - handleAddMessageWebhook - Failed to get chat", { error })
+                    continue
+                }
+            }
+
             const messageModel: Message = {
                 id: message.id,
                 type: messageType,
                 role: "client",
-                sent_at: new Date(message.created_at),
+                sent_at: (() => {
+                    const seconds = Number(message.created_at)
+                    if (!Number.isFinite(seconds)) {
+                        return new Date()
+                    }
+                    return new Date(seconds * 1000)
+                })(),
                 chat_id: message.chat_id,
                 text: messageText,
                 media: messageMedia,
@@ -477,7 +475,13 @@ export class WebhookService {
             try {
                 await this.repo.createMessage(messageModel)
             } catch (error) {
-                logger.error("WebhookService - handleAddMessageWebhook - Failed to create message", { error })
+                const err = error as Error
+                logger.error("WebhookService - handleAddMessageWebhook - Failed to create message", {
+                    error: err,
+                    errorMessage: err?.message,
+                    messageID: message.id,
+                    chatID: message.chat_id,
+                })
                 continue
             }
         }
