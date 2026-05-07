@@ -37,9 +37,9 @@ export class WebhookService {
             }
 
             try {
-                await this.repo.createContact(contactModel)
+                await this.repo.upsertContact(contactModel)
             } catch (error) {
-                logger.error("WebhookService - handleAddContactWebhook - Failed to create contact", { error })
+                logger.error("WebhookService - handleAddContactWebhook - Failed to upsert contact", { error })
                 continue
             }
         }
