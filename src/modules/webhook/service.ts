@@ -214,7 +214,7 @@ export class WebhookService {
             try {
                 await this.repo.createChat(chatModel)
             } catch (error) {
-                logger.error("WebhookService - handleAddTalkWebhook - Failed to create chat", { error })
+                logger.error("WebhookService - handleAddTalkWebhook - Failed to create chat", { chatID: talkResp.chat_id, error: error as Error })
                 continue
             }
         }
