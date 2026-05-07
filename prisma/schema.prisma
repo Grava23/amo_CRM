@@ -73,7 +73,7 @@ model leads {
   updated_at             DateTime  @updatedAt
   deleted_at             DateTime?
 
-  chat          chats?
+  chat          chats[]
   calls         calls[]
   custom_fields lead_custom_fields[]
 }
@@ -103,7 +103,7 @@ model chats {
   integration_domain String
 
   lead leads @relation(fields: [lead_id], references: [id])
-  lead_id Int @unique
+  lead_id Int
 
   contact contacts @relation(fields: [contact_id], references: [id])
   contact_id Int

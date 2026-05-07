@@ -260,7 +260,7 @@ export type leadsWhereInput = {
   created_at?: Prisma.DateTimeFilter<"leads"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"leads"> | Date | string
   deleted_at?: Prisma.DateTimeNullableFilter<"leads"> | Date | string | null
-  chat?: Prisma.XOR<Prisma.ChatsNullableScalarRelationFilter, Prisma.chatsWhereInput> | null
+  chat?: Prisma.ChatsListRelationFilter
   calls?: Prisma.CallsListRelationFilter
   custom_fields?: Prisma.Lead_custom_fieldsListRelationFilter
 }
@@ -275,7 +275,7 @@ export type leadsOrderByWithRelationInput = {
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   deleted_at?: Prisma.SortOrderInput | Prisma.SortOrder
-  chat?: Prisma.chatsOrderByWithRelationInput
+  chat?: Prisma.chatsOrderByRelationAggregateInput
   calls?: Prisma.callsOrderByRelationAggregateInput
   custom_fields?: Prisma.lead_custom_fieldsOrderByRelationAggregateInput
 }
@@ -293,7 +293,7 @@ export type leadsWhereUniqueInput = Prisma.AtLeast<{
   created_at?: Prisma.DateTimeFilter<"leads"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"leads"> | Date | string
   deleted_at?: Prisma.DateTimeNullableFilter<"leads"> | Date | string | null
-  chat?: Prisma.XOR<Prisma.ChatsNullableScalarRelationFilter, Prisma.chatsWhereInput> | null
+  chat?: Prisma.ChatsListRelationFilter
   calls?: Prisma.CallsListRelationFilter
   custom_fields?: Prisma.Lead_custom_fieldsListRelationFilter
 }, "id">
@@ -340,7 +340,7 @@ export type leadsCreateInput = {
   created_at?: Date | string
   updated_at?: Date | string
   deleted_at?: Date | string | null
-  chat?: Prisma.chatsCreateNestedOneWithoutLeadInput
+  chat?: Prisma.chatsCreateNestedManyWithoutLeadInput
   calls?: Prisma.callsCreateNestedManyWithoutLeadInput
   custom_fields?: Prisma.lead_custom_fieldsCreateNestedManyWithoutLeadInput
 }
@@ -355,7 +355,7 @@ export type leadsUncheckedCreateInput = {
   created_at?: Date | string
   updated_at?: Date | string
   deleted_at?: Date | string | null
-  chat?: Prisma.chatsUncheckedCreateNestedOneWithoutLeadInput
+  chat?: Prisma.chatsUncheckedCreateNestedManyWithoutLeadInput
   calls?: Prisma.callsUncheckedCreateNestedManyWithoutLeadInput
   custom_fields?: Prisma.lead_custom_fieldsUncheckedCreateNestedManyWithoutLeadInput
 }
@@ -370,7 +370,7 @@ export type leadsUpdateInput = {
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  chat?: Prisma.chatsUpdateOneWithoutLeadNestedInput
+  chat?: Prisma.chatsUpdateManyWithoutLeadNestedInput
   calls?: Prisma.callsUpdateManyWithoutLeadNestedInput
   custom_fields?: Prisma.lead_custom_fieldsUpdateManyWithoutLeadNestedInput
 }
@@ -385,7 +385,7 @@ export type leadsUncheckedUpdateInput = {
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  chat?: Prisma.chatsUncheckedUpdateOneWithoutLeadNestedInput
+  chat?: Prisma.chatsUncheckedUpdateManyWithoutLeadNestedInput
   calls?: Prisma.callsUncheckedUpdateManyWithoutLeadNestedInput
   custom_fields?: Prisma.lead_custom_fieldsUncheckedUpdateManyWithoutLeadNestedInput
 }
@@ -533,7 +533,7 @@ export type leadsCreateWithoutCustom_fieldsInput = {
   created_at?: Date | string
   updated_at?: Date | string
   deleted_at?: Date | string | null
-  chat?: Prisma.chatsCreateNestedOneWithoutLeadInput
+  chat?: Prisma.chatsCreateNestedManyWithoutLeadInput
   calls?: Prisma.callsCreateNestedManyWithoutLeadInput
 }
 
@@ -547,7 +547,7 @@ export type leadsUncheckedCreateWithoutCustom_fieldsInput = {
   created_at?: Date | string
   updated_at?: Date | string
   deleted_at?: Date | string | null
-  chat?: Prisma.chatsUncheckedCreateNestedOneWithoutLeadInput
+  chat?: Prisma.chatsUncheckedCreateNestedManyWithoutLeadInput
   calls?: Prisma.callsUncheckedCreateNestedManyWithoutLeadInput
 }
 
@@ -577,7 +577,7 @@ export type leadsUpdateWithoutCustom_fieldsInput = {
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  chat?: Prisma.chatsUpdateOneWithoutLeadNestedInput
+  chat?: Prisma.chatsUpdateManyWithoutLeadNestedInput
   calls?: Prisma.callsUpdateManyWithoutLeadNestedInput
 }
 
@@ -591,7 +591,7 @@ export type leadsUncheckedUpdateWithoutCustom_fieldsInput = {
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  chat?: Prisma.chatsUncheckedUpdateOneWithoutLeadNestedInput
+  chat?: Prisma.chatsUncheckedUpdateManyWithoutLeadNestedInput
   calls?: Prisma.callsUncheckedUpdateManyWithoutLeadNestedInput
 }
 
@@ -677,7 +677,7 @@ export type leadsCreateWithoutCallsInput = {
   created_at?: Date | string
   updated_at?: Date | string
   deleted_at?: Date | string | null
-  chat?: Prisma.chatsCreateNestedOneWithoutLeadInput
+  chat?: Prisma.chatsCreateNestedManyWithoutLeadInput
   custom_fields?: Prisma.lead_custom_fieldsCreateNestedManyWithoutLeadInput
 }
 
@@ -691,7 +691,7 @@ export type leadsUncheckedCreateWithoutCallsInput = {
   created_at?: Date | string
   updated_at?: Date | string
   deleted_at?: Date | string | null
-  chat?: Prisma.chatsUncheckedCreateNestedOneWithoutLeadInput
+  chat?: Prisma.chatsUncheckedCreateNestedManyWithoutLeadInput
   custom_fields?: Prisma.lead_custom_fieldsUncheckedCreateNestedManyWithoutLeadInput
 }
 
@@ -721,7 +721,7 @@ export type leadsUpdateWithoutCallsInput = {
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  chat?: Prisma.chatsUpdateOneWithoutLeadNestedInput
+  chat?: Prisma.chatsUpdateManyWithoutLeadNestedInput
   custom_fields?: Prisma.lead_custom_fieldsUpdateManyWithoutLeadNestedInput
 }
 
@@ -735,7 +735,7 @@ export type leadsUncheckedUpdateWithoutCallsInput = {
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  chat?: Prisma.chatsUncheckedUpdateOneWithoutLeadNestedInput
+  chat?: Prisma.chatsUncheckedUpdateManyWithoutLeadNestedInput
   custom_fields?: Prisma.lead_custom_fieldsUncheckedUpdateManyWithoutLeadNestedInput
 }
 
@@ -745,11 +745,13 @@ export type leadsUncheckedUpdateWithoutCallsInput = {
  */
 
 export type LeadsCountOutputType = {
+  chat: number
   calls: number
   custom_fields: number
 }
 
 export type LeadsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  chat?: boolean | LeadsCountOutputTypeCountChatArgs
   calls?: boolean | LeadsCountOutputTypeCountCallsArgs
   custom_fields?: boolean | LeadsCountOutputTypeCountCustom_fieldsArgs
 }
@@ -762,6 +764,13 @@ export type LeadsCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extens
    * Select specific fields to fetch from the LeadsCountOutputType
    */
   select?: Prisma.LeadsCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * LeadsCountOutputType without action
+ */
+export type LeadsCountOutputTypeCountChatArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.chatsWhereInput
 }
 
 /**
@@ -844,7 +853,7 @@ export type leadsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type $leadsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "leads"
   objects: {
-    chat: Prisma.$chatsPayload<ExtArgs> | null
+    chat: Prisma.$chatsPayload<ExtArgs>[]
     calls: Prisma.$callsPayload<ExtArgs>[]
     custom_fields: Prisma.$lead_custom_fieldsPayload<ExtArgs>[]
   }
@@ -1252,7 +1261,7 @@ readonly fields: leadsFieldRefs;
  */
 export interface Prisma__leadsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  chat<T extends Prisma.leads$chatArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.leads$chatArgs<ExtArgs>>): Prisma.Prisma__chatsClient<runtime.Types.Result.GetResult<Prisma.$chatsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  chat<T extends Prisma.leads$chatArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.leads$chatArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$chatsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   calls<T extends Prisma.leads$callsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.leads$callsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$callsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   custom_fields<T extends Prisma.leads$custom_fieldsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.leads$custom_fieldsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$lead_custom_fieldsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1702,6 +1711,11 @@ export type leads$chatArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   include?: Prisma.chatsInclude<ExtArgs> | null
   where?: Prisma.chatsWhereInput
+  orderBy?: Prisma.chatsOrderByWithRelationInput | Prisma.chatsOrderByWithRelationInput[]
+  cursor?: Prisma.chatsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChatsScalarFieldEnum | Prisma.ChatsScalarFieldEnum[]
 }
 
 /**

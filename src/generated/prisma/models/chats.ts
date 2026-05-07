@@ -299,7 +299,6 @@ export type chatsOrderByWithRelationInput = {
 export type chatsWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   conversation_id?: string
-  lead_id?: number
   AND?: Prisma.chatsWhereInput | Prisma.chatsWhereInput[]
   OR?: Prisma.chatsWhereInput[]
   NOT?: Prisma.chatsWhereInput | Prisma.chatsWhereInput[]
@@ -310,12 +309,13 @@ export type chatsWhereUniqueInput = Prisma.AtLeast<{
   updated_at?: Prisma.DateTimeFilter<"chats"> | Date | string
   deleted_at?: Prisma.DateTimeNullableFilter<"chats"> | Date | string | null
   integration_domain?: Prisma.StringFilter<"chats"> | string
+  lead_id?: Prisma.IntFilter<"chats"> | number
   contact_id?: Prisma.IntFilter<"chats"> | number
   integration?: Prisma.XOR<Prisma.IntegrationsScalarRelationFilter, Prisma.integrationsWhereInput>
   lead?: Prisma.XOR<Prisma.LeadsScalarRelationFilter, Prisma.leadsWhereInput>
   contact?: Prisma.XOR<Prisma.ContactsScalarRelationFilter, Prisma.contactsWhereInput>
   messages?: Prisma.MessagesListRelationFilter
-}, "id" | "conversation_id" | "lead_id">
+}, "id" | "conversation_id">
 
 export type chatsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -465,11 +465,6 @@ export type chatsOrderByRelationAggregateInput = {
 export type ChatsScalarRelationFilter = {
   is?: Prisma.chatsWhereInput
   isNot?: Prisma.chatsWhereInput
-}
-
-export type ChatsNullableScalarRelationFilter = {
-  is?: Prisma.chatsWhereInput | null
-  isNot?: Prisma.chatsWhereInput | null
 }
 
 export type chatsCountOrderByAggregateInput = {
@@ -624,36 +619,46 @@ export type chatsUncheckedUpdateManyWithoutContactNestedInput = {
   deleteMany?: Prisma.chatsScalarWhereInput | Prisma.chatsScalarWhereInput[]
 }
 
-export type chatsCreateNestedOneWithoutLeadInput = {
-  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput>
-  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput
-  connect?: Prisma.chatsWhereUniqueInput
+export type chatsCreateNestedManyWithoutLeadInput = {
+  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput> | Prisma.chatsCreateWithoutLeadInput[] | Prisma.chatsUncheckedCreateWithoutLeadInput[]
+  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput | Prisma.chatsCreateOrConnectWithoutLeadInput[]
+  createMany?: Prisma.chatsCreateManyLeadInputEnvelope
+  connect?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
 }
 
-export type chatsUncheckedCreateNestedOneWithoutLeadInput = {
-  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput>
-  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput
-  connect?: Prisma.chatsWhereUniqueInput
+export type chatsUncheckedCreateNestedManyWithoutLeadInput = {
+  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput> | Prisma.chatsCreateWithoutLeadInput[] | Prisma.chatsUncheckedCreateWithoutLeadInput[]
+  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput | Prisma.chatsCreateOrConnectWithoutLeadInput[]
+  createMany?: Prisma.chatsCreateManyLeadInputEnvelope
+  connect?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
 }
 
-export type chatsUpdateOneWithoutLeadNestedInput = {
-  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput>
-  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput
-  upsert?: Prisma.chatsUpsertWithoutLeadInput
-  disconnect?: Prisma.chatsWhereInput | boolean
-  delete?: Prisma.chatsWhereInput | boolean
-  connect?: Prisma.chatsWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.chatsUpdateToOneWithWhereWithoutLeadInput, Prisma.chatsUpdateWithoutLeadInput>, Prisma.chatsUncheckedUpdateWithoutLeadInput>
+export type chatsUpdateManyWithoutLeadNestedInput = {
+  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput> | Prisma.chatsCreateWithoutLeadInput[] | Prisma.chatsUncheckedCreateWithoutLeadInput[]
+  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput | Prisma.chatsCreateOrConnectWithoutLeadInput[]
+  upsert?: Prisma.chatsUpsertWithWhereUniqueWithoutLeadInput | Prisma.chatsUpsertWithWhereUniqueWithoutLeadInput[]
+  createMany?: Prisma.chatsCreateManyLeadInputEnvelope
+  set?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  disconnect?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  delete?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  connect?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  update?: Prisma.chatsUpdateWithWhereUniqueWithoutLeadInput | Prisma.chatsUpdateWithWhereUniqueWithoutLeadInput[]
+  updateMany?: Prisma.chatsUpdateManyWithWhereWithoutLeadInput | Prisma.chatsUpdateManyWithWhereWithoutLeadInput[]
+  deleteMany?: Prisma.chatsScalarWhereInput | Prisma.chatsScalarWhereInput[]
 }
 
-export type chatsUncheckedUpdateOneWithoutLeadNestedInput = {
-  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput>
-  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput
-  upsert?: Prisma.chatsUpsertWithoutLeadInput
-  disconnect?: Prisma.chatsWhereInput | boolean
-  delete?: Prisma.chatsWhereInput | boolean
-  connect?: Prisma.chatsWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.chatsUpdateToOneWithWhereWithoutLeadInput, Prisma.chatsUpdateWithoutLeadInput>, Prisma.chatsUncheckedUpdateWithoutLeadInput>
+export type chatsUncheckedUpdateManyWithoutLeadNestedInput = {
+  create?: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput> | Prisma.chatsCreateWithoutLeadInput[] | Prisma.chatsUncheckedCreateWithoutLeadInput[]
+  connectOrCreate?: Prisma.chatsCreateOrConnectWithoutLeadInput | Prisma.chatsCreateOrConnectWithoutLeadInput[]
+  upsert?: Prisma.chatsUpsertWithWhereUniqueWithoutLeadInput | Prisma.chatsUpsertWithWhereUniqueWithoutLeadInput[]
+  createMany?: Prisma.chatsCreateManyLeadInputEnvelope
+  set?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  disconnect?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  delete?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  connect?: Prisma.chatsWhereUniqueInput | Prisma.chatsWhereUniqueInput[]
+  update?: Prisma.chatsUpdateWithWhereUniqueWithoutLeadInput | Prisma.chatsUpdateWithWhereUniqueWithoutLeadInput[]
+  updateMany?: Prisma.chatsUpdateManyWithWhereWithoutLeadInput | Prisma.chatsUpdateManyWithWhereWithoutLeadInput[]
+  deleteMany?: Prisma.chatsScalarWhereInput | Prisma.chatsScalarWhereInput[]
 }
 
 export type chatsCreateWithoutIntegrationInput = {
@@ -886,43 +891,25 @@ export type chatsCreateOrConnectWithoutLeadInput = {
   create: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput>
 }
 
-export type chatsUpsertWithoutLeadInput = {
-  update: Prisma.XOR<Prisma.chatsUpdateWithoutLeadInput, Prisma.chatsUncheckedUpdateWithoutLeadInput>
-  create: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput>
-  where?: Prisma.chatsWhereInput
+export type chatsCreateManyLeadInputEnvelope = {
+  data: Prisma.chatsCreateManyLeadInput | Prisma.chatsCreateManyLeadInput[]
+  skipDuplicates?: boolean
 }
 
-export type chatsUpdateToOneWithWhereWithoutLeadInput = {
-  where?: Prisma.chatsWhereInput
+export type chatsUpsertWithWhereUniqueWithoutLeadInput = {
+  where: Prisma.chatsWhereUniqueInput
+  update: Prisma.XOR<Prisma.chatsUpdateWithoutLeadInput, Prisma.chatsUncheckedUpdateWithoutLeadInput>
+  create: Prisma.XOR<Prisma.chatsCreateWithoutLeadInput, Prisma.chatsUncheckedCreateWithoutLeadInput>
+}
+
+export type chatsUpdateWithWhereUniqueWithoutLeadInput = {
+  where: Prisma.chatsWhereUniqueInput
   data: Prisma.XOR<Prisma.chatsUpdateWithoutLeadInput, Prisma.chatsUncheckedUpdateWithoutLeadInput>
 }
 
-export type chatsUpdateWithoutLeadInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  talk_id?: Prisma.IntFieldUpdateOperationsInput | number
-  origin?: Prisma.StringFieldUpdateOperationsInput | string
-  conversation_id?: Prisma.StringFieldUpdateOperationsInput | string
-  last_polled_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  integration?: Prisma.integrationsUpdateOneRequiredWithoutChatsNestedInput
-  contact?: Prisma.contactsUpdateOneRequiredWithoutChatsNestedInput
-  messages?: Prisma.messagesUpdateManyWithoutChatNestedInput
-}
-
-export type chatsUncheckedUpdateWithoutLeadInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  talk_id?: Prisma.IntFieldUpdateOperationsInput | number
-  origin?: Prisma.StringFieldUpdateOperationsInput | string
-  conversation_id?: Prisma.StringFieldUpdateOperationsInput | string
-  last_polled_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  integration_domain?: Prisma.StringFieldUpdateOperationsInput | string
-  contact_id?: Prisma.IntFieldUpdateOperationsInput | number
-  messages?: Prisma.messagesUncheckedUpdateManyWithoutChatNestedInput
+export type chatsUpdateManyWithWhereWithoutLeadInput = {
+  where: Prisma.chatsScalarWhereInput
+  data: Prisma.XOR<Prisma.chatsUpdateManyMutationInput, Prisma.chatsUncheckedUpdateManyWithoutLeadInput>
 }
 
 export type chatsCreateManyIntegrationInput = {
@@ -1031,6 +1018,60 @@ export type chatsUncheckedUpdateManyWithoutContactInput = {
   deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   integration_domain?: Prisma.StringFieldUpdateOperationsInput | string
   lead_id?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type chatsCreateManyLeadInput = {
+  id: string
+  talk_id: number
+  origin: string
+  conversation_id: string
+  last_polled_at?: Date | string | null
+  created_at?: Date | string
+  updated_at?: Date | string
+  deleted_at?: Date | string | null
+  integration_domain: string
+  contact_id: number
+}
+
+export type chatsUpdateWithoutLeadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  talk_id?: Prisma.IntFieldUpdateOperationsInput | number
+  origin?: Prisma.StringFieldUpdateOperationsInput | string
+  conversation_id?: Prisma.StringFieldUpdateOperationsInput | string
+  last_polled_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  integration?: Prisma.integrationsUpdateOneRequiredWithoutChatsNestedInput
+  contact?: Prisma.contactsUpdateOneRequiredWithoutChatsNestedInput
+  messages?: Prisma.messagesUpdateManyWithoutChatNestedInput
+}
+
+export type chatsUncheckedUpdateWithoutLeadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  talk_id?: Prisma.IntFieldUpdateOperationsInput | number
+  origin?: Prisma.StringFieldUpdateOperationsInput | string
+  conversation_id?: Prisma.StringFieldUpdateOperationsInput | string
+  last_polled_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  integration_domain?: Prisma.StringFieldUpdateOperationsInput | string
+  contact_id?: Prisma.IntFieldUpdateOperationsInput | number
+  messages?: Prisma.messagesUncheckedUpdateManyWithoutChatNestedInput
+}
+
+export type chatsUncheckedUpdateManyWithoutLeadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  talk_id?: Prisma.IntFieldUpdateOperationsInput | number
+  origin?: Prisma.StringFieldUpdateOperationsInput | string
+  conversation_id?: Prisma.StringFieldUpdateOperationsInput | string
+  last_polled_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deleted_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  integration_domain?: Prisma.StringFieldUpdateOperationsInput | string
+  contact_id?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 

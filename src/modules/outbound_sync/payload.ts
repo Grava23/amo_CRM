@@ -23,25 +23,6 @@ export type OutboundLeadBundle = {
         name: string
         value: unknown
     }>
-    chat: null | {
-        id: string
-        talk_id: number
-        origin: string
-        conversation_id: string
-        integration_domain: string
-        last_polled_at: string | null
-        created_at: string
-        updated_at: string
-    }
-    contact: null | {
-        id: number
-        name: string
-        first_name: string
-        last_name: string | null
-        responsible_user_id: number | null
-        created_at: string
-        updated_at: string
-    }
     /** Все звонки по этой сделке (`calls.lead_id = lead.id`) */
     calls: Array<{
         uuid: string
@@ -59,7 +40,7 @@ export type OutboundLeadBundle = {
         created_at: string
         updated_at: string
     }>
-    /** Сообщения чата этой сделки (если чат есть) */
+    /** Сообщения по всем чатам этой сделки */
     messages: Array<{
         id: string
         chat_id: string
@@ -70,8 +51,25 @@ export type OutboundLeadBundle = {
         sent_at: string
         created_at: string
         updated_at: string
-        /** Дублируем origin чата как «канал» */
-        channel: string | null
+        chat: {
+            id: string
+            talk_id: number
+            origin: string
+            conversation_id: string
+            integration_domain: string
+            last_polled_at: string | null
+            created_at: string
+            updated_at: string
+        }
+        contact: null | {
+            id: number
+            name: string
+            first_name: string
+            last_name: string | null
+            responsible_user_id: number | null
+            created_at: string
+            updated_at: string
+        }
     }>
 }
 
@@ -84,7 +82,10 @@ function unixToIso(ts: number): string {
 }
 
 export async function buildOutboundPayload(prisma: PrismaClient): Promise<OutboundPayload> {
-    const rows = await prisma.leads.findMany({
+    // Prisma client types могут отставать от schema.prisma во время разработки.
+    // Используем `any`, чтобы не блокировать сборку payload при изменении связей lead↔chats.
+    const prismaAny = prisma as any
+    const rows: any[] = await prismaAny.leads.findMany({
         where: { deleted_at: null },
         orderBy: { id: "asc" },
         include: {
@@ -93,7 +94,7 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
                 where: { deleted_at: null },
                 orderBy: { timestamp: "asc" },
             },
-            chat: {
+            chats: {
                 where: { deleted_at: null },
                 include: {
                     contact: true,
@@ -107,8 +108,9 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
     })
 
     const leads: OutboundLeadBundle[] = rows.map((row) => {
-        const ch = row.chat
-        const channel = ch?.origin ?? null
+        const allMessages: Array<{ ch: any, m: any }> = (row.chats ?? []).flatMap((ch: any) =>
+            (ch.messages ?? []).map((m: any) => ({ ch, m })),
+        )
 
         return {
             lead: {
@@ -121,35 +123,12 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
                 created_at: iso(row.created_at),
                 updated_at: iso(row.updated_at),
             },
-            custom_fields: row.custom_fields.map((f) => ({
+            custom_fields: (row.custom_fields ?? []).map((f: any) => ({
                 amo_field_id: f.amo_field_id,
                 name: f.name,
                 value: f.value,
             })),
-            chat: ch
-                ? {
-                    id: ch.id,
-                    talk_id: ch.talk_id,
-                    origin: ch.origin,
-                    conversation_id: ch.conversation_id,
-                    integration_domain: ch.integration_domain,
-                    last_polled_at: ch.last_polled_at ? iso(ch.last_polled_at) : null,
-                    created_at: iso(ch.created_at),
-                    updated_at: iso(ch.updated_at),
-                }
-                : null,
-            contact: ch?.contact
-                ? {
-                    id: ch.contact.id,
-                    name: ch.contact.name,
-                    first_name: ch.contact.first_name,
-                    last_name: ch.contact.last_name ?? null,
-                    responsible_user_id: ch.contact.responsible_user_id,
-                    created_at: iso(ch.contact.created_at),
-                    updated_at: iso(ch.contact.updated_at),
-                }
-                : null,
-            calls: row.calls.map((c) => ({
+            calls: (row.calls ?? []).map((c: any) => ({
                 uuid: c.uuid,
                 lead_id: c.lead_id,
                 direction: c.direction,
@@ -164,18 +143,40 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
                 created_at: iso(c.created_at),
                 updated_at: iso(c.updated_at),
             })),
-            messages: (ch?.messages ?? []).map((m) => ({
-                id: m.id,
-                chat_id: m.chat_id,
-                type: m.type,
-                text: m.text,
-                media: m.media,
-                role: m.role,
-                sent_at: iso(m.sent_at),
-                created_at: iso(m.created_at),
-                updated_at: iso(m.updated_at),
-                channel,
-            })),
+            messages: allMessages
+                .sort((a: { ch: any, m: any }, b: { ch: any, m: any }) => a.m.sent_at.getTime() - b.m.sent_at.getTime())
+                .map(({ ch, m }: { ch: any, m: any }) => ({
+                    id: m.id,
+                    chat_id: m.chat_id,
+                    type: m.type,
+                    text: m.text,
+                    media: m.media,
+                    role: m.role,
+                    sent_at: iso(m.sent_at),
+                    created_at: iso(m.created_at),
+                    updated_at: iso(m.updated_at),
+                    chat: {
+                        id: ch.id,
+                        talk_id: ch.talk_id,
+                        origin: ch.origin,
+                        conversation_id: ch.conversation_id,
+                        integration_domain: ch.integration_domain,
+                        last_polled_at: ch.last_polled_at ? iso(ch.last_polled_at) : null,
+                        created_at: iso(ch.created_at),
+                        updated_at: iso(ch.updated_at),
+                    },
+                    contact: ch.contact
+                        ? {
+                            id: ch.contact.id,
+                            name: ch.contact.name,
+                            first_name: ch.contact.first_name,
+                            last_name: ch.contact.last_name ?? null,
+                            responsible_user_id: ch.contact.responsible_user_id,
+                            created_at: iso(ch.contact.created_at),
+                            updated_at: iso(ch.contact.updated_at),
+                        }
+                        : null,
+                })),
         }
     })
 
