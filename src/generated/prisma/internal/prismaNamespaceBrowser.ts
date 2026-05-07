@@ -58,7 +58,6 @@ export const ModelName = {
   leads: 'leads',
   lead_custom_fields: 'lead_custom_fields',
   chats: 'chats',
-  chat_history_offsets: 'chat_history_offsets',
   calls: 'calls',
   outbound_sync_config: 'outbound_sync_config'
 } as const
@@ -174,17 +173,6 @@ export const ChatsScalarFieldEnum = {
 } as const
 
 export type ChatsScalarFieldEnum = (typeof ChatsScalarFieldEnum)[keyof typeof ChatsScalarFieldEnum]
-
-
-export const Chat_history_offsetsScalarFieldEnum = {
-  scope_id: 'scope_id',
-  conversation_id: 'conversation_id',
-  offset: 'offset',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-} as const
-
-export type Chat_history_offsetsScalarFieldEnum = (typeof Chat_history_offsetsScalarFieldEnum)[keyof typeof Chat_history_offsetsScalarFieldEnum]
 
 
 export const CallsScalarFieldEnum = {

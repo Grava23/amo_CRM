@@ -391,7 +391,6 @@ export const ModelName = {
   leads: 'leads',
   lead_custom_fields: 'lead_custom_fields',
   chats: 'chats',
-  chat_history_offsets: 'chat_history_offsets',
   calls: 'calls',
   outbound_sync_config: 'outbound_sync_config'
 } as const
@@ -409,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "oauth_states" | "integrations" | "messages" | "contacts" | "leads" | "lead_custom_fields" | "chats" | "chat_history_offsets" | "calls" | "outbound_sync_config"
+    modelProps: "oauth_states" | "integrations" | "messages" | "contacts" | "leads" | "lead_custom_fields" | "chats" | "calls" | "outbound_sync_config"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -931,80 +930,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    chat_history_offsets: {
-      payload: Prisma.$chat_history_offsetsPayload<ExtArgs>
-      fields: Prisma.chat_history_offsetsFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.chat_history_offsetsFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.chat_history_offsetsFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>
-        }
-        findFirst: {
-          args: Prisma.chat_history_offsetsFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.chat_history_offsetsFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>
-        }
-        findMany: {
-          args: Prisma.chat_history_offsetsFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>[]
-        }
-        create: {
-          args: Prisma.chat_history_offsetsCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>
-        }
-        createMany: {
-          args: Prisma.chat_history_offsetsCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.chat_history_offsetsCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>[]
-        }
-        delete: {
-          args: Prisma.chat_history_offsetsDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>
-        }
-        update: {
-          args: Prisma.chat_history_offsetsUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>
-        }
-        deleteMany: {
-          args: Prisma.chat_history_offsetsDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.chat_history_offsetsUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.chat_history_offsetsUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>[]
-        }
-        upsert: {
-          args: Prisma.chat_history_offsetsUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$chat_history_offsetsPayload>
-        }
-        aggregate: {
-          args: Prisma.Chat_history_offsetsAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateChat_history_offsets>
-        }
-        groupBy: {
-          args: Prisma.chat_history_offsetsGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.Chat_history_offsetsGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.chat_history_offsetsCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.Chat_history_offsetsCountAggregateOutputType> | number
-        }
-      }
-    }
     calls: {
       payload: Prisma.$callsPayload<ExtArgs>
       fields: Prisma.callsFieldRefs
@@ -1289,17 +1214,6 @@ export const ChatsScalarFieldEnum = {
 export type ChatsScalarFieldEnum = (typeof ChatsScalarFieldEnum)[keyof typeof ChatsScalarFieldEnum]
 
 
-export const Chat_history_offsetsScalarFieldEnum = {
-  scope_id: 'scope_id',
-  conversation_id: 'conversation_id',
-  offset: 'offset',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-} as const
-
-export type Chat_history_offsetsScalarFieldEnum = (typeof Chat_history_offsetsScalarFieldEnum)[keyof typeof Chat_history_offsetsScalarFieldEnum]
-
-
 export const CallsScalarFieldEnum = {
   uuid: 'uuid',
   direction: 'direction',
@@ -1558,7 +1472,6 @@ export type GlobalOmitConfig = {
   leads?: Prisma.leadsOmit
   lead_custom_fields?: Prisma.lead_custom_fieldsOmit
   chats?: Prisma.chatsOmit
-  chat_history_offsets?: Prisma.chat_history_offsetsOmit
   calls?: Prisma.callsOmit
   outbound_sync_config?: Prisma.outbound_sync_configOmit
 }

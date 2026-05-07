@@ -77,11 +77,6 @@ export type lead_custom_fields = Prisma.lead_custom_fieldsModel
  */
 export type chats = Prisma.chatsModel
 /**
- * Model chat_history_offsets
- * 
- */
-export type chat_history_offsets = Prisma.chat_history_offsetsModel
-/**
  * Model calls
  * 
  */

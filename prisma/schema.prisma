@@ -111,16 +111,6 @@ model chats {
   messages messages[]
 }
 
-model chat_history_offsets {
-  scope_id        String
-  conversation_id String
-  offset          Int      @default(0)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  @@id([scope_id, conversation_id])
-}
-
 model calls {
   uuid                   String    @id
   direction              String
