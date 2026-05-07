@@ -122,9 +122,8 @@ model chat_history_offsets {
 }
 
 model calls {
-  id                     Int       @id
+  uuid                   String    @id
   direction              String
-  uuid                   String    @unique
   duration               Int
   source                 String
   link                   String

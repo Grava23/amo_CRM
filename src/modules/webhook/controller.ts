@@ -1,5 +1,5 @@
 import { FastifyRequest } from "fastify";
-import { AddLeadWebhookBody, AddTalkWebhookBody, DeleteContactWebhookBody, DeleteLeadWebhookBody, IncomingMessageWebhookBody, IncomingMessageWebhookParams, RestoreLeadWebhookBody, UpdateLeadWebhookBody } from "./schema.js";
+import { AddLeadWebhookBody, AddMessageWebhookBody, AddNoteWebhookBody, AddTalkWebhookBody, DeleteContactWebhookBody, DeleteLeadWebhookBody, IncomingMessageWebhookBody, IncomingMessageWebhookParams, RestoreLeadWebhookBody, UpdateLeadWebhookBody } from "./schema.js";
 import { FastifyReply } from "fastify";
 import { WebhookService } from "./service.js"
 import { WebhookRepo } from "./repo.js";
@@ -115,8 +115,26 @@ export async function handleRestoreLeadWebhookController(req: FastifyRequest<{ B
     })
 }
 
-export async function handleAddNoteWebhookController(req: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
-    logger.info("handleAddNoteWebhookController - received request", { body: req.body })
+export async function handleAddNoteWebhookController(req: FastifyRequest<{ Body: AddNoteWebhookBody }>, reply: FastifyReply) {
+    const repo = new WebhookRepo(req.server.prisma)
+    const service = new WebhookService(repo, req.server.amoClient)
+
+    void service.handleAddNoteWebhook(req.body).catch((error) => {
+        req.log.error({ error }, "handleAddNoteWebhookController - background processing failed")
+    })
+
+    return reply.status(202).send({ message: "Accepted" })
+}
+
+export async function handleAddMessageWebhookController(req: FastifyRequest<{ Body: AddMessageWebhookBody }>, reply: FastifyReply) {
+    logger.debug("handleAddMessageWebhookController - received request", { body: req.body })
+
+    const repo = new WebhookRepo(req.server.prisma)
+    const service = new WebhookService(repo, req.server.amoClient)
+
+    void service.handleAddMessageWebhook(req.body).catch((error) => {
+        req.log.error({ error }, "handleAddMessageWebhookController - background processing failed")
+    })
 
     return reply.status(202).send({ message: "Accepted" })
 }

@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify"
-import { addContactWebhookBodySchema, updateContactWebhookBodySchema, deleteContactWebhookBodySchema, addTalkWebhookBodySchema, addLeadWebhookBodySchema, updateLeadWebhookBodySchema, deleteLeadWebhookBodySchema, restoreLeadWebhookBodySchema } from "./schema.js"
-import { addContactWebhookController, outgoingMessageWebhookController, handleUpdateContactWebhookController, handleRestoreContactWebhookController, handleAddTalkWebhookController, handleAddLeadWebhookController, handleAddNoteWebhookController, handleDeleteContactWebhookController, handleUpdateLeadWebhookController, handleDeleteLeadWebhookController, handleRestoreLeadWebhookController } from "./controller.js"
+import { addContactWebhookBodySchema, updateContactWebhookBodySchema, deleteContactWebhookBodySchema, addTalkWebhookBodySchema, addLeadWebhookBodySchema, updateLeadWebhookBodySchema, deleteLeadWebhookBodySchema, restoreLeadWebhookBodySchema, addMessageWebhookBodySchema, addNoteWebhookBodySchema } from "./schema.js"
+import { addContactWebhookController, outgoingMessageWebhookController, handleUpdateContactWebhookController, handleRestoreContactWebhookController, handleAddTalkWebhookController, handleAddLeadWebhookController, handleAddNoteWebhookController, handleDeleteContactWebhookController, handleUpdateLeadWebhookController, handleDeleteLeadWebhookController, handleRestoreLeadWebhookController, handleAddMessageWebhookController } from "./controller.js"
 
 const webhookRoutes: FastifyPluginAsync = async (app) => {
     app.post("/:scope_id",
@@ -87,8 +87,15 @@ const webhookRoutes: FastifyPluginAsync = async (app) => {
         },
         handleRestoreLeadWebhookController
     )
-    //TODO посмотреть на тело запроса
-    app.post("/notes/add", handleAddNoteWebhookController)
+    app.post("/leads/note",
+        {
+            schema:
+            {
+                body: addNoteWebhookBodySchema
+            }
+        },
+        handleAddNoteWebhookController
+    )
     app.post("/talks/add",
         {
             schema:
@@ -97,6 +104,15 @@ const webhookRoutes: FastifyPluginAsync = async (app) => {
             }
         },
         handleAddTalkWebhookController
+    )
+    app.post("/messages/add",
+        {
+            schema:
+            {
+                body: addMessageWebhookBodySchema
+            }
+        },
+        handleAddMessageWebhookController
     )
 }
 

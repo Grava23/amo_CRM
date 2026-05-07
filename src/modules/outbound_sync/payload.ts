@@ -44,10 +44,9 @@ export type OutboundLeadBundle = {
     }
     /** Все звонки по этой сделке (`calls.lead_id = lead.id`) */
     calls: Array<{
-        id: number
+        uuid: string
         lead_id: number
         direction: string
-        uuid: string
         duration: number
         source: string
         link: string
@@ -151,10 +150,9 @@ export async function buildOutboundPayload(prisma: PrismaClient): Promise<Outbou
                 }
                 : null,
             calls: row.calls.map((c) => ({
-                id: c.id,
+                uuid: c.uuid,
                 lead_id: c.lead_id,
                 direction: c.direction,
-                uuid: c.uuid,
                 duration: c.duration,
                 source: c.source,
                 link: c.link,

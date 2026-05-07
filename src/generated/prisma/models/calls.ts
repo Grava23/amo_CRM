@@ -27,23 +27,20 @@ export type AggregateCalls = {
 }
 
 export type CallsAvgAggregateOutputType = {
-  id: number | null
   duration: number | null
   timestamp: number | null
   lead_id: number | null
 }
 
 export type CallsSumAggregateOutputType = {
-  id: number | null
   duration: number | null
   timestamp: number | null
   lead_id: number | null
 }
 
 export type CallsMinAggregateOutputType = {
-  id: number | null
-  direction: string | null
   uuid: string | null
+  direction: string | null
   duration: number | null
   source: string | null
   link: string | null
@@ -58,9 +55,8 @@ export type CallsMinAggregateOutputType = {
 }
 
 export type CallsMaxAggregateOutputType = {
-  id: number | null
-  direction: string | null
   uuid: string | null
+  direction: string | null
   duration: number | null
   source: string | null
   link: string | null
@@ -75,9 +71,8 @@ export type CallsMaxAggregateOutputType = {
 }
 
 export type CallsCountAggregateOutputType = {
-  id: number
-  direction: number
   uuid: number
+  direction: number
   duration: number
   source: number
   link: number
@@ -94,23 +89,20 @@ export type CallsCountAggregateOutputType = {
 
 
 export type CallsAvgAggregateInputType = {
-  id?: true
   duration?: true
   timestamp?: true
   lead_id?: true
 }
 
 export type CallsSumAggregateInputType = {
-  id?: true
   duration?: true
   timestamp?: true
   lead_id?: true
 }
 
 export type CallsMinAggregateInputType = {
-  id?: true
-  direction?: true
   uuid?: true
+  direction?: true
   duration?: true
   source?: true
   link?: true
@@ -125,9 +117,8 @@ export type CallsMinAggregateInputType = {
 }
 
 export type CallsMaxAggregateInputType = {
-  id?: true
-  direction?: true
   uuid?: true
+  direction?: true
   duration?: true
   source?: true
   link?: true
@@ -142,9 +133,8 @@ export type CallsMaxAggregateInputType = {
 }
 
 export type CallsCountAggregateInputType = {
-  id?: true
-  direction?: true
   uuid?: true
+  direction?: true
   duration?: true
   source?: true
   link?: true
@@ -246,9 +236,8 @@ export type callsGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 }
 
 export type CallsGroupByOutputType = {
-  id: number
-  direction: string
   uuid: string
+  direction: string
   duration: number
   source: string
   link: string
@@ -286,9 +275,8 @@ export type callsWhereInput = {
   AND?: Prisma.callsWhereInput | Prisma.callsWhereInput[]
   OR?: Prisma.callsWhereInput[]
   NOT?: Prisma.callsWhereInput | Prisma.callsWhereInput[]
-  id?: Prisma.IntFilter<"calls"> | number
-  direction?: Prisma.StringFilter<"calls"> | string
   uuid?: Prisma.StringFilter<"calls"> | string
+  direction?: Prisma.StringFilter<"calls"> | string
   duration?: Prisma.IntFilter<"calls"> | number
   source?: Prisma.StringFilter<"calls"> | string
   link?: Prisma.StringFilter<"calls"> | string
@@ -304,9 +292,8 @@ export type callsWhereInput = {
 }
 
 export type callsOrderByWithRelationInput = {
-  id?: Prisma.SortOrder
-  direction?: Prisma.SortOrder
   uuid?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   duration?: Prisma.SortOrder
   source?: Prisma.SortOrder
   link?: Prisma.SortOrder
@@ -322,7 +309,6 @@ export type callsOrderByWithRelationInput = {
 }
 
 export type callsWhereUniqueInput = Prisma.AtLeast<{
-  id?: number
   uuid?: string
   AND?: Prisma.callsWhereInput | Prisma.callsWhereInput[]
   OR?: Prisma.callsWhereInput[]
@@ -340,12 +326,11 @@ export type callsWhereUniqueInput = Prisma.AtLeast<{
   deleted_at?: Prisma.DateTimeNullableFilter<"calls"> | Date | string | null
   lead_id?: Prisma.IntFilter<"calls"> | number
   lead?: Prisma.XOR<Prisma.LeadsScalarRelationFilter, Prisma.leadsWhereInput>
-}, "id" | "uuid">
+}, "uuid">
 
 export type callsOrderByWithAggregationInput = {
-  id?: Prisma.SortOrder
-  direction?: Prisma.SortOrder
   uuid?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   duration?: Prisma.SortOrder
   source?: Prisma.SortOrder
   link?: Prisma.SortOrder
@@ -368,9 +353,8 @@ export type callsScalarWhereWithAggregatesInput = {
   AND?: Prisma.callsScalarWhereWithAggregatesInput | Prisma.callsScalarWhereWithAggregatesInput[]
   OR?: Prisma.callsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.callsScalarWhereWithAggregatesInput | Prisma.callsScalarWhereWithAggregatesInput[]
-  id?: Prisma.IntWithAggregatesFilter<"calls"> | number
-  direction?: Prisma.StringWithAggregatesFilter<"calls"> | string
   uuid?: Prisma.StringWithAggregatesFilter<"calls"> | string
+  direction?: Prisma.StringWithAggregatesFilter<"calls"> | string
   duration?: Prisma.IntWithAggregatesFilter<"calls"> | number
   source?: Prisma.StringWithAggregatesFilter<"calls"> | string
   link?: Prisma.StringWithAggregatesFilter<"calls"> | string
@@ -385,9 +369,8 @@ export type callsScalarWhereWithAggregatesInput = {
 }
 
 export type callsCreateInput = {
-  id: number
-  direction: string
   uuid: string
+  direction: string
   duration: number
   source: string
   link: string
@@ -402,9 +385,8 @@ export type callsCreateInput = {
 }
 
 export type callsUncheckedCreateInput = {
-  id: number
-  direction: string
   uuid: string
+  direction: string
   duration: number
   source: string
   link: string
@@ -419,9 +401,8 @@ export type callsUncheckedCreateInput = {
 }
 
 export type callsUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  direction?: Prisma.StringFieldUpdateOperationsInput | string
   uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.StringFieldUpdateOperationsInput | string
   duration?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.StringFieldUpdateOperationsInput | string
   link?: Prisma.StringFieldUpdateOperationsInput | string
@@ -436,9 +417,8 @@ export type callsUpdateInput = {
 }
 
 export type callsUncheckedUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  direction?: Prisma.StringFieldUpdateOperationsInput | string
   uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.StringFieldUpdateOperationsInput | string
   duration?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.StringFieldUpdateOperationsInput | string
   link?: Prisma.StringFieldUpdateOperationsInput | string
@@ -453,9 +433,8 @@ export type callsUncheckedUpdateInput = {
 }
 
 export type callsCreateManyInput = {
-  id: number
-  direction: string
   uuid: string
+  direction: string
   duration: number
   source: string
   link: string
@@ -470,9 +449,8 @@ export type callsCreateManyInput = {
 }
 
 export type callsUpdateManyMutationInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  direction?: Prisma.StringFieldUpdateOperationsInput | string
   uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.StringFieldUpdateOperationsInput | string
   duration?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.StringFieldUpdateOperationsInput | string
   link?: Prisma.StringFieldUpdateOperationsInput | string
@@ -486,9 +464,8 @@ export type callsUpdateManyMutationInput = {
 }
 
 export type callsUncheckedUpdateManyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  direction?: Prisma.StringFieldUpdateOperationsInput | string
   uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.StringFieldUpdateOperationsInput | string
   duration?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.StringFieldUpdateOperationsInput | string
   link?: Prisma.StringFieldUpdateOperationsInput | string
@@ -513,9 +490,8 @@ export type callsOrderByRelationAggregateInput = {
 }
 
 export type callsCountOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  direction?: Prisma.SortOrder
   uuid?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   duration?: Prisma.SortOrder
   source?: Prisma.SortOrder
   link?: Prisma.SortOrder
@@ -530,16 +506,14 @@ export type callsCountOrderByAggregateInput = {
 }
 
 export type callsAvgOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   duration?: Prisma.SortOrder
   timestamp?: Prisma.SortOrder
   lead_id?: Prisma.SortOrder
 }
 
 export type callsMaxOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  direction?: Prisma.SortOrder
   uuid?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   duration?: Prisma.SortOrder
   source?: Prisma.SortOrder
   link?: Prisma.SortOrder
@@ -554,9 +528,8 @@ export type callsMaxOrderByAggregateInput = {
 }
 
 export type callsMinOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  direction?: Prisma.SortOrder
   uuid?: Prisma.SortOrder
+  direction?: Prisma.SortOrder
   duration?: Prisma.SortOrder
   source?: Prisma.SortOrder
   link?: Prisma.SortOrder
@@ -571,7 +544,6 @@ export type callsMinOrderByAggregateInput = {
 }
 
 export type callsSumOrderByAggregateInput = {
-  id?: Prisma.SortOrder
   duration?: Prisma.SortOrder
   timestamp?: Prisma.SortOrder
   lead_id?: Prisma.SortOrder
@@ -620,9 +592,8 @@ export type callsUncheckedUpdateManyWithoutLeadNestedInput = {
 }
 
 export type callsCreateWithoutLeadInput = {
-  id: number
-  direction: string
   uuid: string
+  direction: string
   duration: number
   source: string
   link: string
@@ -636,9 +607,8 @@ export type callsCreateWithoutLeadInput = {
 }
 
 export type callsUncheckedCreateWithoutLeadInput = {
-  id: number
-  direction: string
   uuid: string
+  direction: string
   duration: number
   source: string
   link: string
@@ -681,9 +651,8 @@ export type callsScalarWhereInput = {
   AND?: Prisma.callsScalarWhereInput | Prisma.callsScalarWhereInput[]
   OR?: Prisma.callsScalarWhereInput[]
   NOT?: Prisma.callsScalarWhereInput | Prisma.callsScalarWhereInput[]
-  id?: Prisma.IntFilter<"calls"> | number
-  direction?: Prisma.StringFilter<"calls"> | string
   uuid?: Prisma.StringFilter<"calls"> | string
+  direction?: Prisma.StringFilter<"calls"> | string
   duration?: Prisma.IntFilter<"calls"> | number
   source?: Prisma.StringFilter<"calls"> | string
   link?: Prisma.StringFilter<"calls"> | string
@@ -698,9 +667,8 @@ export type callsScalarWhereInput = {
 }
 
 export type callsCreateManyLeadInput = {
-  id: number
-  direction: string
   uuid: string
+  direction: string
   duration: number
   source: string
   link: string
@@ -714,9 +682,8 @@ export type callsCreateManyLeadInput = {
 }
 
 export type callsUpdateWithoutLeadInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  direction?: Prisma.StringFieldUpdateOperationsInput | string
   uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.StringFieldUpdateOperationsInput | string
   duration?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.StringFieldUpdateOperationsInput | string
   link?: Prisma.StringFieldUpdateOperationsInput | string
@@ -730,9 +697,8 @@ export type callsUpdateWithoutLeadInput = {
 }
 
 export type callsUncheckedUpdateWithoutLeadInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  direction?: Prisma.StringFieldUpdateOperationsInput | string
   uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.StringFieldUpdateOperationsInput | string
   duration?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.StringFieldUpdateOperationsInput | string
   link?: Prisma.StringFieldUpdateOperationsInput | string
@@ -746,9 +712,8 @@ export type callsUncheckedUpdateWithoutLeadInput = {
 }
 
 export type callsUncheckedUpdateManyWithoutLeadInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  direction?: Prisma.StringFieldUpdateOperationsInput | string
   uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.StringFieldUpdateOperationsInput | string
   duration?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.StringFieldUpdateOperationsInput | string
   link?: Prisma.StringFieldUpdateOperationsInput | string
@@ -764,9 +729,8 @@ export type callsUncheckedUpdateManyWithoutLeadInput = {
 
 
 export type callsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  direction?: boolean
   uuid?: boolean
+  direction?: boolean
   duration?: boolean
   source?: boolean
   link?: boolean
@@ -782,9 +746,8 @@ export type callsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 }, ExtArgs["result"]["calls"]>
 
 export type callsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  direction?: boolean
   uuid?: boolean
+  direction?: boolean
   duration?: boolean
   source?: boolean
   link?: boolean
@@ -800,9 +763,8 @@ export type callsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 }, ExtArgs["result"]["calls"]>
 
 export type callsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  direction?: boolean
   uuid?: boolean
+  direction?: boolean
   duration?: boolean
   source?: boolean
   link?: boolean
@@ -818,9 +780,8 @@ export type callsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 }, ExtArgs["result"]["calls"]>
 
 export type callsSelectScalar = {
-  id?: boolean
-  direction?: boolean
   uuid?: boolean
+  direction?: boolean
   duration?: boolean
   source?: boolean
   link?: boolean
@@ -834,7 +795,7 @@ export type callsSelectScalar = {
   lead_id?: boolean
 }
 
-export type callsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "direction" | "uuid" | "duration" | "source" | "link" | "phone" | "call_responsible" | "call_responsible_name" | "timestamp" | "created_at" | "updated_at" | "deleted_at" | "lead_id", ExtArgs["result"]["calls"]>
+export type callsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uuid" | "direction" | "duration" | "source" | "link" | "phone" | "call_responsible" | "call_responsible_name" | "timestamp" | "created_at" | "updated_at" | "deleted_at" | "lead_id", ExtArgs["result"]["calls"]>
 export type callsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lead?: boolean | Prisma.leadsDefaultArgs<ExtArgs>
 }
@@ -851,9 +812,8 @@ export type $callsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     lead: Prisma.$leadsPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: number
-    direction: string
     uuid: string
+    direction: string
     duration: number
     source: string
     link: string
@@ -948,8 +908,8 @@ export interface callsDelegate<ExtArgs extends runtime.Types.Extensions.Internal
    * // Get first 10 Calls
    * const calls = await prisma.calls.findMany({ take: 10 })
    * 
-   * // Only select the `id`
-   * const callsWithIdOnly = await prisma.calls.findMany({ select: { id: true } })
+   * // Only select the `uuid`
+   * const callsWithUuidOnly = await prisma.calls.findMany({ select: { uuid: true } })
    * 
    */
   findMany<T extends callsFindManyArgs>(args?: Prisma.SelectSubset<T, callsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$callsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -993,9 +953,9 @@ export interface callsDelegate<ExtArgs extends runtime.Types.Extensions.Internal
    *   ]
    * })
    * 
-   * // Create many Calls and only return the `id`
-   * const callsWithIdOnly = await prisma.calls.createManyAndReturn({
-   *   select: { id: true },
+   * // Create many Calls and only return the `uuid`
+   * const callsWithUuidOnly = await prisma.calls.createManyAndReturn({
+   *   select: { uuid: true },
    *   data: [
    *     // ... provide data here
    *   ]
@@ -1084,9 +1044,9 @@ export interface callsDelegate<ExtArgs extends runtime.Types.Extensions.Internal
    *   ]
    * })
    * 
-   * // Update zero or more Calls and only return the `id`
-   * const callsWithIdOnly = await prisma.calls.updateManyAndReturn({
-   *   select: { id: true },
+   * // Update zero or more Calls and only return the `uuid`
+   * const callsWithUuidOnly = await prisma.calls.updateManyAndReturn({
+   *   select: { uuid: true },
    *   where: {
    *     // ... provide filter here
    *   },
@@ -1289,9 +1249,8 @@ export interface Prisma__callsClient<T, Null = never, ExtArgs extends runtime.Ty
  * Fields of the calls model
  */
 export interface callsFieldRefs {
-  readonly id: Prisma.FieldRef<"calls", 'Int'>
-  readonly direction: Prisma.FieldRef<"calls", 'String'>
   readonly uuid: Prisma.FieldRef<"calls", 'String'>
+  readonly direction: Prisma.FieldRef<"calls", 'String'>
   readonly duration: Prisma.FieldRef<"calls", 'Int'>
   readonly source: Prisma.FieldRef<"calls", 'String'>
   readonly link: Prisma.FieldRef<"calls", 'String'>

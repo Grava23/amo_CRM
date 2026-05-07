@@ -1,4 +1,4 @@
-import { AddContactWebhookBody, AddLeadWebhookBody, AddTalkWebhookBody, DeleteContactWebhookBody, DeleteLeadWebhookBody, RestoreLeadWebhookBody, UpdateContactWebhookBody, UpdateLeadWebhookBody } from "./schema.js";
+import { AddContactWebhookBody, AddLeadWebhookBody, AddMessageWebhookBody, AddNoteWebhookBody, AddTalkWebhookBody, DeleteContactWebhookBody, DeleteLeadWebhookBody, RestoreLeadWebhookBody, UpdateContactWebhookBody, UpdateLeadWebhookBody } from "./schema.js";
 import { WebhookRepo } from "./repo.js";
 import { logger } from "../../logger.js";
 import { AmoClient } from "../../infra/amo/client.js";
@@ -12,6 +12,8 @@ import { Lead } from "../../models/leads.js";
 import { GetContactResponse } from "../../infra/amo/response/contact.js";
 import { getMessageHistoryWorkerManager } from "./message_history_worker.js";
 import { rowsFromAmoApiCustomFieldsValues, rowsFromWebhookCustomFields } from "../lead_custom_fields/build_rows.js";
+import { Message } from "../../models/messages.js";
+import { Call } from "../../models/calls.js";
 
 export class WebhookService {
     constructor(private repo: WebhookRepo, private amoClient: AmoClient) { }
@@ -445,6 +447,99 @@ export class WebhookService {
                 await this.syncLeadCustomFieldsFromWebhook(leadId, lead.custom_fields)
             } catch (error) {
                 logger.error("WebhookService - handleRestoreLeadWebhook - Failed to sync lead custom fields", { error })
+            }
+        }
+    }
+
+    async handleAddMessageWebhook(body: AddMessageWebhookBody) {
+        for (const message of body.message.add) {
+            let messageType: "text" | "file" | "video" | "picture" | "voice" | "audio" | "sticker"
+            let messageText: string | undefined = undefined
+            let messageMedia: string | undefined = undefined
+            if (message.attachment) {
+                messageType = message.attachment.type
+                messageMedia = message.attachment.link
+            } else {
+                messageType = "text"
+                messageText = message.text
+            }
+
+            const messageModel: Message = {
+                id: message.id,
+                type: messageType,
+                role: "client",
+                sent_at: new Date(message.created_at),
+                chat_id: message.chat_id,
+                text: messageText,
+                media: messageMedia,
+            }
+
+            try {
+                await this.repo.createMessage(messageModel)
+            } catch (error) {
+                logger.error("WebhookService - handleAddMessageWebhook - Failed to create message", { error })
+                continue
+            }
+        }
+    }
+
+    async handleAddNoteWebhook(body: AddNoteWebhookBody) {
+        for (const note of body.leads.note) {
+            //* call_in - 10, call_out - 11
+            if (note.type != "10" && note.type != "11") {
+                continue
+            }
+
+            if (!note.note.text) {
+                continue
+            }
+            type CallTextPayload = {
+                PHONE?: string
+                UNIQ?: string
+                DURATION?: number
+                SRC?: string
+                LINK?: string
+                call_status?: number
+            }
+
+            const callTextPayload: CallTextPayload = JSON.parse(note.note.text)
+
+            if (!note.note.element_id) {
+                continue
+            }
+
+            if (!callTextPayload.UNIQ || !callTextPayload.LINK || !callTextPayload.PHONE) {
+                continue
+            }
+
+            type CallMetadata = {
+                event_source: {
+                    id?: number
+                    author_name?: string
+                    type?: number
+                }
+            }
+
+            const callMetadata: CallMetadata = JSON.parse(note.note.metadata ?? "{}")
+
+            const callModel: Call = {
+                uuid: callTextPayload.UNIQ,
+                direction: note.type == "10" ? "in" : "out",
+                duration: callTextPayload.DURATION ?? 0,
+                source: callTextPayload.SRC ?? "",
+                link: callTextPayload.LINK,
+                phone: callTextPayload.PHONE,
+                call_responsible: note.note.created_by ?? "",
+                call_responsible_name: callMetadata.event_source.author_name ?? null,
+                timestamp: new Date(note.note.created_at!).getTime(),
+                lead_id: parseInt(note.note.element_id),
+            }
+
+            try {
+                await this.repo.upsertCall(callModel)
+            } catch (error) {
+                logger.error("WebhookService - handleAddNoteWebhook - Failed to upsert call", { error })
+                continue
             }
         }
     }

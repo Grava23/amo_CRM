@@ -179,12 +179,16 @@ export class AuthService {
         settings: ["restore_lead"],
       },
       {
-        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/notes/add",
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/leads/note",
         settings: ["note_lead"],
       },
       {
         destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/talks/add",
         settings: ["add_talk"],
+      },
+      {
+        destination: "http://crm.31.129.103.126.nip.io/api/v1/webhook/messages/add",
+        settings: ["add_message"],
       }
     ]
 

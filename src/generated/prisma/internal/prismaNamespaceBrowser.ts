@@ -188,9 +188,8 @@ export type Chat_history_offsetsScalarFieldEnum = (typeof Chat_history_offsetsSc
 
 
 export const CallsScalarFieldEnum = {
-  id: 'id',
-  direction: 'direction',
   uuid: 'uuid',
+  direction: 'direction',
   duration: 'duration',
   source: 'source',
   link: 'link',

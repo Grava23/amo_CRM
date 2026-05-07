@@ -79,49 +79,6 @@ class MessageHistoryWorkerManager {
     }
 
     private async collectAllAvailable({ repo, integration, conversationID, limit }: Required<EnqueueArgs>) {
-        let offset = await this.getOffset(repo, integration.scopeID, conversationID)
-
-        while (true) {
-            const resp = await this.amoClient.chat.getMessageHistory(integration.scopeID, conversationID, { offset, limit })
-            const batch = resp?.messages ?? []
-
-            if (batch.length === 0) {
-                return
-            }
-
-            logger.info("MessageHistoryWorker - fetched messages", {
-                conversationID,
-                offset,
-                count: batch.length,
-            })
-
-            for (const message of batch) {
-                const messageModel: Message = {
-                    id: message.message.id,
-                    chat_id: conversationID,
-                    type: message.message.type as Message["type"],
-                    role: message.sender?.client_id ? "client" : "manager",
-                    sent_at: new Date((message.msec_timestamp ?? (message.timestamp * 1000))),
-                    text: message.message.text,
-                    media: message.message.media,
-                }
-
-                try {
-                    await repo.createMessage(messageModel)
-                } catch (error) {
-                    logger.error("MessageHistoryWorker - failed to create message", { conversationID, error })
-                }
-            }
-
-            offset += batch.length
-            this.offsets.set(conversationID, offset)
-            await repo.setChatHistoryOffset(integration.scopeID, conversationID, offset)
-
-            if (batch.length < limit) {
-                break
-            }
-        }
-
         let lead: Lead = {
             id: 0,
             name: "",
@@ -196,9 +153,8 @@ class MessageHistoryWorkerManager {
                 }
 
                 const call: Call = {
-                    id: note.id,
-                    direction: note.note_type === "call_in" ? "in" : "out",
                     uuid: note.params.uniq,
+                    direction: note.note_type === "call_in" ? "in" : "out",
                     duration: note.params.duration,
                     source: note.params.source,
                     link: note.params.link,
@@ -219,26 +175,6 @@ class MessageHistoryWorkerManager {
 
             page++
         }
-    }
-
-    private async getOffset(repo: WebhookRepo, scopeID: string, conversationID: string) {
-        const cached = this.offsets.get(conversationID)
-        if (cached !== undefined) return cached
-
-        const inflight = this.offsetLoads.get(conversationID)
-        if (inflight) return await inflight
-
-        const p = repo.getChatHistoryOffset(scopeID, conversationID)
-            .then((offset) => {
-                this.offsets.set(conversationID, offset)
-                return offset
-            })
-            .finally(() => {
-                this.offsetLoads.delete(conversationID)
-            })
-
-        this.offsetLoads.set(conversationID, p)
-        return await p
     }
 }
 

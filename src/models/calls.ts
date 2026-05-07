@@ -1,9 +1,8 @@
 import { z } from "zod"
 
 const callSchema = z.object({
-    id: z.number(),
-    direction: z.string(),
     uuid: z.string(),
+    direction: z.string(),
     duration: z.number(),
     source: z.string(),
     link: z.string(),

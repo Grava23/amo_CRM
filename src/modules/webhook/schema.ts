@@ -361,3 +361,85 @@ export const restoreLeadWebhookBodySchema = z.object({
 })
 
 export type RestoreLeadWebhookBody = z.infer<typeof restoreLeadWebhookBodySchema>
+
+export const addMessageWebhookBodySchema = z.object({
+    account: z.object({
+        subdomain: z.string(),
+        id: z.coerce.string(),
+        _links: z.object({
+            self: z.string().url(),
+        }),
+    }),
+    message: z.object({
+        add: z.array(z.object({
+            id: z.coerce.string(),
+            chat_id: z.coerce.string(),
+            talk_id: z.coerce.string(),
+            contact_id: z.coerce.string(),
+            text: z.string(),
+            created_at: z.coerce.string(),
+            attachment: z.object({
+                type: z.enum(["file", "video", "picture", "voice", "audio", "sticker"]),
+                link: z.string().url(),
+                file_name: z.string(),
+            }).optional(),
+            element_type: z.coerce.string(),
+            entity_type: z.string(),
+            element_id: z.coerce.string(),
+            entity_id: z.coerce.string(),
+            type: z.string(),
+            author: z.object({
+                id: z.coerce.string(),
+                type: z.string(),
+                name: z.string(),
+                avatar_url: z.string().url().optional(),
+            }),
+            origin: z.string(),
+        })).min(1),
+    })
+})
+
+export type AddMessageWebhookBody = z.infer<typeof addMessageWebhookBodySchema>
+
+const amoNoteItemSchema = z.object({
+    note: z.object({
+        note_type: z.coerce.string(),
+        element_type: z.coerce.string().optional(),
+        element_id: z.coerce.string().optional(),
+        date_create: z.coerce.string().optional(),
+        text: z.coerce.string().optional(),
+
+        // Часто встречающиеся поля в payload
+        created_by: z.coerce.string().optional(),
+        modified_by: z.coerce.string().optional(),
+        main_user_id: z.coerce.string().optional(),
+        account_id: z.coerce.string().optional(),
+        id: z.coerce.string().optional(),
+        created_at: z.coerce.string().optional(),
+        updated_at: z.coerce.string().optional(),
+        timestamp_x: z.coerce.string().optional(),
+        metadata: z.coerce.string().optional(),
+
+        // В некоторых типах заметок
+        message_uuid: z.coerce.string().optional(),
+        attachment: z.coerce.string().optional(),
+        attachement: z.coerce.string().optional(),
+        catalog_id: z.coerce.string().optional(),
+        group_id: z.coerce.string().optional(),
+    }).passthrough(),
+}).passthrough()
+
+export const addNoteWebhookBodySchema = z.object({
+    account: z.object({
+        subdomain: z.string(),
+        id: z.coerce.string(),
+        _links: z.object({
+            self: z.string().url(),
+        }),
+    }),
+    leads: z.object({
+        note: z.array(amoNoteItemSchema).min(1),
+    }),
+})
+
+export type AddNoteWebhookBody = z.infer<typeof addNoteWebhookBodySchema>

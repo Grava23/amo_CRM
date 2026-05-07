@@ -249,10 +249,9 @@ export class WebhookRepo {
 
     async upsertCall(call: Call) {
         return await this.prisma.calls.upsert({
-            where: { id: call.id },
+            where: { uuid: call.uuid },
             update: {
                 direction: call.direction,
-                uuid: call.uuid,
                 duration: call.duration,
                 source: call.source,
                 link: call.link,
@@ -263,9 +262,8 @@ export class WebhookRepo {
                 lead: { connect: { id: call.lead_id } },
             },
             create: {
-                id: call.id,
-                direction: call.direction,
                 uuid: call.uuid,
+                direction: call.direction,
                 duration: call.duration,
                 source: call.source,
                 link: call.link,
