@@ -8,6 +8,13 @@ import { withAmoTokenRefresh } from "../../infra/amo/with_token_refresh.js"
 import { GetCallNotesResponse } from "../../infra/amo/response/notes.js"
 import { Call } from "../../models/calls.js"
 
+function isPrismaNotFoundError(error: unknown): boolean {
+    return typeof error === "object"
+        && error !== null
+        && "code" in error
+        && (error as { code?: unknown }).code === "P2025"
+}
+
 type EnqueueArgs = {
     repo: WebhookRepo
     integration: Integration
@@ -90,7 +97,13 @@ class MessageHistoryWorkerManager {
         try {
             lead = await repo.getLeadByConversationID(conversationID)
         } catch (error) {
+            if (isPrismaNotFoundError(error)) {
+                logger.warn("MessageHistoryWorker - lead not found for conversation", { conversationID })
+                return
+            }
+
             logger.error("MessageHistoryWorker - failed to get lead", { conversationID, error })
+
             return
         }
 
@@ -117,14 +130,20 @@ class MessageHistoryWorkerManager {
                 continue
             }
 
-            if (resp._embedded.notes.length === 0 || resp._links.next === undefined) {
+            const notes = resp?._embedded?.notes
+            if (!Array.isArray(notes)) {
+                logger.warn("MessageHistoryWorker - notes response malformed", { conversationID, leadID: lead.id, page })
+                break
+            }
+
+            if (notes.length === 0 || resp._links?.next === undefined) {
                 logger.warn("MessageHistoryWorker - no notes found", { conversationID, leadID: lead.id, page })
                 break
             }
 
-            logger.info("MessageHistoryWorker - fetched notes", { conversationID, leadID: lead.id, page, count: resp._embedded.notes.length })
+            logger.info("MessageHistoryWorker - fetched notes", { conversationID, leadID: lead.id, page, count: notes.length })
 
-            for (const note of resp._embedded.notes) {
+            for (const note of notes) {
                 // call_in: params.call_responsible — уже имя (строка). call_out — id пользователя, имя через API.
                 let call_responsible_name: string | null = null
                 if (note.note_type === "call_in") {
