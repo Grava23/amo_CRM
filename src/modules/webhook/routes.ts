@@ -4,13 +4,6 @@ import { addContactWebhookController, outgoingMessageWebhookController, handleUp
 
 const webhookRoutes: FastifyPluginAsync = async (app) => {
     app.post("/:scope_id",
-        {
-            // schema:
-            // {
-            //     params: incomingMessageWebhookParamsSchema,
-            //     body: incomingMessageWebhookBodySchema
-            // }
-        },
         outgoingMessageWebhookController
     )
     app.post("/contacts/add",
