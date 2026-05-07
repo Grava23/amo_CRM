@@ -315,24 +315,32 @@ export class WebhookService {
                     if (note.note_type === "call_in") {
                         call_responsible_name = note.params.call_responsible
                     } else {
-                        try {
-                            const user = await withAmoTokenRefresh(
-                                callsIntegration,
-                                this.repo,
-                                this.amoClient.auth,
-                                (accessToken) => this.amoClient.users.getUserByID(
-                                    callsIntegration.domain,
-                                    accessToken,
-                                    note.params.call_responsible,
-                                    {},
-                                ),
-                            )
-                            call_responsible_name = user.name ?? null
-                        } catch (error) {
-                            logger.warn("WebhookService - handleAddLeadWebhook - get user for call_out failed", {
-                                responsibleUserId: note.params.call_responsible,
-                                error: error as Error,
+                        const responsibleUserId = Number(note.params.call_responsible)
+                        if (!Number.isFinite(responsibleUserId)) {
+                            logger.warn("WebhookService - handleAddLeadWebhook - call_out without responsible user id", {
+                                leadID: lead.id,
+                                callUUID: note.params.uniq,
                             })
+                        } else {
+                            try {
+                                const user = await withAmoTokenRefresh(
+                                    callsIntegration,
+                                    this.repo,
+                                    this.amoClient.auth,
+                                    (accessToken) => this.amoClient.users.getUserByID(
+                                        callsIntegration.domain,
+                                        accessToken,
+                                        responsibleUserId,
+                                        {},
+                                    ),
+                                )
+                                call_responsible_name = user.name ?? null
+                            } catch (error) {
+                                logger.warn("WebhookService - handleAddLeadWebhook - get user for call_out failed", {
+                                    responsibleUserId,
+                                    error: error as Error,
+                                })
+                            }
                         }
                     }
 
@@ -645,9 +653,12 @@ export class WebhookService {
 
         for (const note of body.leads.note) {
             //* call_in - 10, call_out - 11
-            if (note.type != "10" && note.type != "11") {
+            const noteType = note.note.note_type
+            if (noteType !== "10" && noteType !== "11") {
                 continue
             }
+
+            logger.debug("WebhookService - handleAddNoteWebhook - received call note", { note })
 
             if (!note.note.text) {
                 continue
@@ -683,14 +694,18 @@ export class WebhookService {
 
             const callModel: Call = {
                 uuid: callTextPayload.UNIQ,
-                direction: note.type == "10" ? "in" : "out",
+                direction: noteType === "10" ? "in" : "out",
                 duration: callTextPayload.DURATION ?? 0,
                 source: callTextPayload.SRC ?? "",
                 link: callTextPayload.LINK,
                 phone: callTextPayload.PHONE,
                 call_responsible: note.note.created_by ?? "",
                 call_responsible_name: callMetadata.event_source.author_name ?? null,
-                timestamp: new Date(note.note.created_at!).getTime(),
+                timestamp: (() => {
+                    const seconds = Number(note.note.created_at)
+                    if (!Number.isFinite(seconds)) return Math.floor(Date.now() / 1000)
+                    return Math.floor(seconds)
+                })(),
                 lead_id: parseInt(note.note.element_id),
             }
 

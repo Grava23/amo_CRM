@@ -287,22 +287,31 @@ const leadSchema = z.object({
     date_create: z.coerce.string(),
     pipeline_id: z.coerce.string(),
     account_id: z.coerce.string(),
-    custom_fields: z.array(z.object({
-        id: z.coerce.number(),
-        name: z.string(),
-        values: z.preprocess(
-            (val) => {
-                // amo может прислать values как массив [{value: ...}]
-                // или как объект вида {"[0][value]": "..."}.
-                if (Array.isArray(val)) return val
-                if (val && typeof val === "object") {
-                    return Object.values(val as Record<string, unknown>).map((value) => ({ value }))
-                }
-                return val
-            },
-            z.array(z.object({ value: z.any() })),
-        ),
-    })).optional(),
+    custom_fields: z.preprocess(
+        (val) => {
+            // amo может прислать custom_fields как массив
+            // или как объект вида {"0": {...}, "1": {...}}.
+            if (Array.isArray(val)) return val
+            if (val && typeof val === "object") return Object.values(val as Record<string, unknown>)
+            return val
+        },
+        z.array(z.object({
+            id: z.coerce.number(),
+            name: z.string(),
+            values: z.preprocess(
+                (val) => {
+                    // amo может прислать values как массив [{value: ...}]
+                    // или как объект вида {"[0][value]": "..."}.
+                    if (Array.isArray(val)) return val
+                    if (val && typeof val === "object") {
+                        return Object.values(val as Record<string, unknown>).map((value) => ({ value }))
+                    }
+                    return val
+                },
+                z.array(z.object({ value: z.any() })),
+            ),
+        })).optional(),
+    ),
     created_at: z.coerce.string(),
     updated_at: z.coerce.string(),
 })

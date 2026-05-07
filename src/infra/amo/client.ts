@@ -52,7 +52,7 @@ export class AmoClient {
         })
 
         for (let attempt = 1; attempt <= this.retries; attempt++) {
-            logger.info(`HTTP request attempt`, {
+            logger.debug(`HTTP request attempt`, {
                 url: request.url,
                 method: request.method,
                 attempt: `${attempt}/${this.retries}`,
@@ -94,7 +94,7 @@ export class AmoClient {
                             throw new Error(`HTTP ${status}: ${text}`)
                         }
 
-                        logger.info(`HTTP request successful`, {
+                        logger.debug(`HTTP request successful`, {
                             url: requestForAttempt.url,
                             method: requestForAttempt.method,
                             status: res.status,
@@ -146,7 +146,7 @@ export class AmoClient {
 
             const delay = this.baseDelay * Math.pow(2, attempt - 1)
 
-            logger.info(`HTTP request delay`, {
+            logger.debug(`HTTP request delay`, {
                 url: request.url,
                 method: request.method,
                 delay: delay
