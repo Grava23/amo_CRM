@@ -2,6 +2,7 @@ import { logger } from "../../logger.js"
 import type { PrismaClient } from "../../generated/prisma/client.js"
 import { buildOutboundPayload } from "./payload.js"
 import { OutboundSyncRepo } from "./repo.js"
+import { gzipSync } from "node:zlib"
 
 type StartArgs = {
     prisma: PrismaClient
@@ -27,19 +28,26 @@ export function startOutboundSyncWorker({ prisma, tickMs = 10_000 }: StartArgs) 
 
             const payload = await buildOutboundPayload(prisma)
             const sentAt = new Date(payload.sent_at)
-            const body = JSON.stringify(payload)
+            const bodyJson = JSON.stringify(payload)
+            const bodyGzip = gzipSync(Buffer.from(bodyJson, "utf8"))
 
             const headers: Record<string, string> = {
                 "Content-Type": "application/json",
+                "Content-Encoding": "gzip",
             }
             if (cfg.api_key) {
                 headers["Authorization"] = `Bearer ${cfg.api_key}`
             }
 
+            logger.debug("OutboundSync — prepared payload", {
+                json_bytes: Buffer.byteLength(bodyJson, "utf8"),
+                gzip_bytes: bodyGzip.byteLength,
+            })
+
             const res = await fetch(cfg.target_url, {
                 method: "POST",
                 headers,
-                body,
+                body: bodyGzip,
                 signal: AbortSignal.timeout(120_000),
             })
 
