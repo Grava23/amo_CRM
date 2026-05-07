@@ -37,6 +37,21 @@ export async function run() {
     await app.register(amoPlugin)
     await app.register(apiKeyPlugin)
 
+    app.setErrorHandler((error, req, reply) => {
+        // Логируем тело запроса для 400 (обычно это validation errors),
+        // чтобы проще было дебажить неожиданные payload'ы от вебхуков/клиентов.
+        if ((reply as any).statusCode === 400 || (error as any)?.statusCode === 400) {
+            logger.warn("Request failed with 400", {
+                method: req.method,
+                url: req.url,
+                errorMessage: (error as Error)?.message,
+                body: (req as any).body,
+            })
+        }
+
+        reply.send(error)
+    })
+
     app.addHook("onRequest", async (req, reply) => {
         ; (req as any).startTime = Date.now()
         logger.info(`Incoming request`, { method: req.method, url: req.url, ip: req.ip })
