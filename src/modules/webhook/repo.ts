@@ -153,9 +153,20 @@ export class WebhookRepo {
 
     async createChat(chat: Chat) {
         const prismaAny = this.prisma as any
-        return await prismaAny.chats.create({
-            data: {
+        // Идемпотентность: addTalk/addMessage могут прийти в любом порядке,
+        // а также повторяться. Upsert предотвращает падение на required relation.
+        return await prismaAny.chats.upsert({
+            where: { id: chat.id },
+            create: {
                 id: chat.id,
+                talk_id: chat.talk_id,
+                origin: chat.origin,
+                conversation_id: chat.conversation_id,
+                integration: { connect: { domain: chat.integration_domain } },
+                lead: { connect: { id: chat.lead_id } },
+                contact: { connect: { id: chat.contact_id } },
+            },
+            update: {
                 talk_id: chat.talk_id,
                 origin: chat.origin,
                 conversation_id: chat.conversation_id,

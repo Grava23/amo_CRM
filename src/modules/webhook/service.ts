@@ -198,7 +198,9 @@ export class WebhookService {
             }
 
             const chatModel: Chat = {
-                id: talk.talk_id.toString(),
+                // В остальных вебхуках (messages/add) message.chat_id ссылается на chat.id.
+                // Поэтому id чата должен быть именно amojo chat_id (uuid), а не talk_id.
+                id: talkResp.chat_id,
                 origin: talkResp.origin,
                 talk_id: talkResp.talk_id,
                 conversation_id: talkResp.chat_id,
