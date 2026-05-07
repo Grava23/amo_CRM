@@ -246,18 +246,6 @@ export class WebhookRepo {
         })
     }
 
-    async getLeadByConversationID(conversationID: string): Promise<Lead> {
-        return await this.prisma.leads.findFirstOrThrow({
-            where: {
-                chat: {
-                    conversation_id: conversationID,
-                    deleted_at: null,
-                },
-                deleted_at: null,
-            },
-        })
-    }
-
     async upsertCall(call: Call) {
         return await this.prisma.calls.upsert({
             where: { uuid: call.uuid },
