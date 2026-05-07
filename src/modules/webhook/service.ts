@@ -641,6 +641,8 @@ export class WebhookService {
     }
 
     async handleAddNoteWebhook(body: AddNoteWebhookBody) {
+        logger.debug("WebhookService - handleAddNoteWebhook - received request", { body })
+
         for (const note of body.leads.note) {
             //* call_in - 10, call_out - 11
             if (note.type != "10" && note.type != "11") {
