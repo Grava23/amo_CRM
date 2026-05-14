@@ -27,9 +27,12 @@ export function startOutboundSyncWorker({ prisma, tickMs = 10_000 }: StartArgs) 
             if (!intervalElapsed && !retryAfterFailure) return
 
             const payload = await buildOutboundPayload(prisma)
+            logger.debug("payload", { payload: payload })
+
             const sentAt = new Date(payload.sent_at)
             const bodyJson = JSON.stringify(payload)
             const bodyGzip = gzipSync(Buffer.from(bodyJson, "utf8"))
+            logger.debug("gzip body", { body: bodyGzip })
 
             const headers: Record<string, string> = {
                 "Content-Type": "application/json",
